@@ -90,7 +90,31 @@ def archivo_Abrir():
         try:
             # Read the uploaded file
             json_data = json.load(uploaded_file)
-            return_value = Ljson(json_data)
+            nodes = []
+            edges = []
+              
+            for node in json_data["graph"][0]["data"]:
+                     idNode = node["id"]
+                     nodes.append(Node(id = idNode, size=node["radius"], label=node["label"], 
+                                       type=node["type"], data=node["data"], color="yellow", shape="circle"))
+              
+            for node in json_data["graph"][0]["data"]:
+                     idNode = node["id"]
+                     for edge in node["linkedTo"]:
+                            if edge["nodeId"] in (node.id for node in nodes):
+                                edges.append(Edge(source=idNode, label=edge["weight"], 
+                                            target=edge["nodeId"]))
+                            else:
+                                  nodes.append(Node(id = edge["nodeId"], size=1, label=str(edge["nodeId"]), 
+                                       type=" ", data={}, color="yellow", shape="circle")) 
+                                  edges.append(Edge(source=idNode, label=edge["weight"], 
+                                            target=edge["nodeId"]))
+            
+
+            config = Config(width=750, height=950, directed=True, physics=True, hierarchical=False)
+
+              # Mostrar el grafo utilizando agraph
+            return_value = agraph(nodes=nodes, edges=edges, config=config)
             st.write(return_value)
             
         except json.JSONDecodeError:
