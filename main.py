@@ -1,125 +1,121 @@
 import streamlit as st
 from streamlit_agraph import agraph, Node, Edge, Config
 import json
-import LectorJSON as Ljson
 
-def menu_principal():
-    st.title("Menú Principal")
-    opciones = ["Archivo", "Editar", "Ejecutar", "Herramientas", "Ventana","Ayuda"]
-    seleccion = st.sidebar.selectbox("Selecciona una opción", opciones)
+class GraphApp:
+    def __init__(self):
+        self.initialize_session_state()
 
-    if seleccion == "Archivo":
-        archivo()
-    elif seleccion == "Editar":
-        editar()
-    elif seleccion == "Ejecutar":
-        ejecutar()
-    elif seleccion == "Herramientas":
-        herramientas()
-    elif seleccion == "Ventana":
-        ventana()
-    elif seleccion == "Ayuda":
-        ayuda()
+    def initialize_session_state(self):
+        if 'grafo' not in st.session_state:
+            st.session_state.grafo = {"nodes": None, "edges": None, "config": None}
 
-def archivo():
-    st.header("Página de Archivo")
-    st.write("Bienvenido a la aplicación. Esta es la página de archivo.")
-    submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
-                                          ["Nuevo Grafo", "Abrir", "Cerrar", 
-                                           "Guardar", "Guardar Como", "Exportar datos",
-                                           "Importar datos", "Salir"])
-    if submenu_opcion == "Abrir":
-        archivo_Abrir()
-    elif submenu_opcion == "Nuevo Grafo":
-        archivo_NuevoGrafo()
-    
+    def menu_principal(self):
+        # Restaurar o inicializar el estado de la sesión
+        self.initialize_session_state()
 
-def editar():
-    st.header("Página de editar")
-    st.write("Bienvenido a la aplicación. Esta es la página de editar.")
-    submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
-                                          ["Deshacer", "Nodo", "Arco" ])
+        # Definir la disposición de la página
+        st.sidebar.title("Menú Principal")
+        opciones = ["Archivo", "Editar", "Ejecutar", "Herramientas", "Ventana", "Ayuda"]
+        seleccion = st.sidebar.selectbox("Selecciona una opción", opciones)
 
-def ejecutar():
-    st.header("Página de ejecutar")
-    st.write("Bienvenido a la aplicación. Esta es la página de ejecutar.")
-    submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
-                                          ["Procesos"])
-    
-def herramientas():
-    st.header("Página de herramientas")
-    st.write("Bienvenido a la aplicación. Esta es la página de herramientas.")
-    submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
-                                          ["....Coming soon"])
-    
-def ventana():
-    st.header("Página de ventana")
-    st.write("Bienvenido a la aplicación. Esta es la página de ventana.")
-    submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
-                                          ["Grafica", "Tabla"])
-    
-def ayuda():
-    st.header("Página de ayuda")
-    st.write("Bienvenido a la aplicación. Esta es la página de ayuda.")
-    submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
-                                          ["Ayuda", "Acerca de grafos"])
-    
-    
-def archivo_NuevoGrafo():
-    nodes = [
-        Node(id="Spiderman", label="Peter Parker", size=25, shape="circularImage", image="http://marvel-force-chart.surge.sh/marvel_force_chart_img/top_spiderman.png"),
-        Node(id="Captain_Marvel", size=25, shape="circularImage", image="http://marvel-force-chart.surge.sh/marvel_force_chart_img/top_captainmarvel.png")
-    ]
+        if seleccion == "Archivo":
+            self.archivo()
+        elif seleccion == "Editar":
+            self.editar()
+        elif seleccion == "Ejecutar":
+            self.ejecutar()
+        elif seleccion == "Herramientas":
+            self.herramientas()
+        elif seleccion == "Ventana":
+            self.ventana()
+        elif seleccion == "Ayuda":
+            self.ayuda()
 
-    edges = [
-        Edge(source="Captain_Marvel", label="friend_of", target="Spiderman")
-    ]
+    def archivo(self):
+        submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
+                                              ["Nuevo Grafo", "Abrir", "Cerrar", 
+                                               "Guardar", "Guardar Como", "Exportar datos",
+                                               "Importar datos", "Salir"])
+        if submenu_opcion == "Abrir":
+            self.archivo_abrir()
+        elif submenu_opcion == "Nuevo Grafo":
+            self.archivo_nuevo_grafo()
 
-    config = Config(width=750, height=950, directed=True, physics=True, hierarchical=False)
+    def editar(self):
+        st.header("Página de editar")
+        submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
+                                              ["Deshacer", "Nodo", "Arco" ])
 
-    # Mostrar el grafo utilizando agraph
-    return_value = agraph(nodes=nodes, edges=edges, config=config)
-    st.write(return_value)
+    def ejecutar(self):
+        st.header("Página de ejecutar")
+        submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
+                                              ["Procesos"])
+                
+    def herramientas(self):
+        st.header("Página de herramientas")
+        submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
+                                              ["....Coming soon"])
+                
+    def ventana(self):
+        st.header("Página de ventana")
+        submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
+                                              ["Grafica", "Tabla"])
+                
+    def ayuda(self):
+        st.header("Página de ayuda")
+        submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
+                                              ["Ayuda", "Acerca de grafos"])
+                
+                
+    def archivo_nuevo_grafo(self):
+        if st.session_state.grafo["nodes"] is None:
+            st.header("No hay un grafo en la aplicación")
+        else:
+            st.header("Grafo")
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+                   st.session_state.grafo["config"])
 
-def archivo_Abrir():
+    def archivo_abrir(self):
+        # Widget para cargar el archivo JSON
+        uploaded_file = st.file_uploader("Selecciona un archivo JSON", type=["json"])
 
-    # Widget for uploading the JSON file
-    uploaded_file = st.file_uploader("Select a JSON file", type=["json"])
+        if uploaded_file is not None:
+            try:
+                # Leer el archivo cargado
+                json_data = json.load(uploaded_file)
+                nodes = []
+                edges = []
+                
+                for node in json_data["graph"][0]["data"]:
+                    idNode = node["id"]
+                    nodes.append(Node(id=idNode, size=node["radius"], label=node["label"], 
+                                      type=node["type"], data=node["data"], color="yellow", shape="circle"))
+                
+                for node in json_data["graph"][0]["data"]:
+                    idNode = node["id"]
+                    for edge in node["linkedTo"]:
+                        if edge["nodeId"] in (n.id for n in nodes):
+                            edges.append(Edge(source=idNode, label=edge["weight"], 
+                                              target=edge["nodeId"]))
+                        else:
+                            nodes.append(Node(id=edge["nodeId"], size=1, label=str(edge["nodeId"]), 
+                                              type=" ", data={}, color="yellow", shape="circle")) 
+                            edges.append(Edge(source=idNode, label=edge["weight"], 
+                                              target=edge["nodeId"]))
 
-    if uploaded_file is not None:
-        try:
-            # Read the uploaded file
-            json_data = json.load(uploaded_file)
-            nodes = []
-            edges = []
-              
-            for node in json_data["graph"][0]["data"]:
-                     idNode = node["id"]
-                     nodes.append(Node(id = idNode, size=node["radius"], label=node["label"], 
-                                       type=node["type"], data=node["data"], color="yellow", shape="circle"))
-              
-            for node in json_data["graph"][0]["data"]:
-                     idNode = node["id"]
-                     for edge in node["linkedTo"]:
-                            if edge["nodeId"] in (node.id for node in nodes):
-                                edges.append(Edge(source=idNode, label=edge["weight"], 
-                                            target=edge["nodeId"]))
-                            else:
-                                  nodes.append(Node(id = edge["nodeId"], size=1, label=str(edge["nodeId"]), 
-                                       type=" ", data={}, color="yellow", shape="circle")) 
-                                  edges.append(Edge(source=idNode, label=edge["weight"], 
-                                            target=edge["nodeId"]))
-            
+                config = Config(width=750, height=950, directed=True, physics=True, hierarchical=False)
+                
+                st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
+                st.header("Grafo")
+                agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+                        st.session_state.grafo["config"])
+                
+            except json.JSONDecodeError:
+                st.error("Error al decodificar el archivo JSON. Asegúrate de que el archivo tenga un formato JSON válido.")
 
-            config = Config(width=750, height=950, directed=True, physics=True, hierarchical=False)
+# Crear una instancia de la clase GraphApp
+app = GraphApp()
 
-              # Mostrar el grafo utilizando agraph
-            return_value = agraph(nodes=nodes, edges=edges, config=config)
-            st.write(return_value)
-            
-        except json.JSONDecodeError:
-            st.error("Error al decodificar el archivo JSON. Asegúrate de que el archivo tenga un formato JSON válido.")
-
-
-# Llama a la función del menú principal
-menu_principal()
+# Llamar al método menu_principal
+app.menu_principal()
