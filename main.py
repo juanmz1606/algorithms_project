@@ -1,6 +1,11 @@
 import streamlit as st
 from streamlit_agraph import agraph, Node, Edge, Config
 import json
+import os
+import psutil
+import time
+import keyboard
+
 
 class GraphApp:
     def __init__(self):
@@ -41,7 +46,10 @@ class GraphApp:
             self.archivo_abrir()
         elif submenu_opcion == "Nuevo Grafo":
             self.archivo_nuevo_grafo()
-
+        elif submenu_opcion == "Salir":
+            self.salir()
+            
+          
     def editar(self):
         st.header("Página de editar")
         submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
@@ -75,6 +83,15 @@ class GraphApp:
             st.header("Grafo")
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                    st.session_state.grafo["config"])
+            
+    def salir(self):
+        exit_app = st.sidebar.button("Click para salir de la aplicación")
+        if exit_app:
+            time.sleep(3)
+            keyboard.press_and_release('ctrl+w')
+            pid = os.getpid()
+            p = psutil.Process(pid)
+            p.terminate()
 
     def archivo_abrir(self):
         # Widget para cargar el archivo JSON
@@ -119,3 +136,4 @@ app = GraphApp()
 
 # Llamar al método menu_principal
 app.menu_principal()
+
