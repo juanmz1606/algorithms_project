@@ -5,6 +5,7 @@ import os
 import psutil
 import time
 import keyboard
+import uuid
 
 
 class GraphApp:
@@ -78,12 +79,75 @@ class GraphApp:
                 
     def archivo_nuevo_grafo(self):
         if st.session_state.grafo["nodes"] is None:
-            st.header("No hay un grafo en la aplicación")
+            st.title("No se ha creado ningún grafo 😞")
         else:
             st.header("Grafo")
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
-                   st.session_state.grafo["config"])
+                        st.session_state.grafo["config"])
+
+        # Submenú para elegir entre grafo personalizado y aleatorio
+        subopcion = st.sidebar.radio("Selecciona el tipo de grafo:", ["Personalizado", "Aleatorio"])
+
+        if subopcion == "Personalizado":
+            self.crear_grafo_personalizado()
+        elif subopcion == "Aleatorio":
+            # Implementación para el grafo aleatorio
+            st.sidebar.warning("La opción de grafo aleatorio aún no está implementada.")
             
+            
+    def crear_grafo_personalizado(self):
+        nodes = []
+        edges = []
+        
+        # Configuración para el grafo personalizado
+        cantidad_nodos = st.sidebar.number_input("Cantidad de nodos:", min_value=1, value=5)
+
+        grafo_completo = st.sidebar.checkbox("Grafo completo")
+
+        grafo_conexo = st.sidebar.checkbox("Grafo conexo")
+
+        ponderado = st.sidebar.checkbox("Ponderado")
+
+        # Peso para todas las aristas (si el grafo es ponderado)
+        peso_aristas = None
+        if ponderado:
+            peso_aristas = st.sidebar.number_input("Peso de todas las aristas:", min_value=1, value=1)
+
+        dirigido = st.sidebar.checkbox("Dirigido")
+
+        # Color para todos los nodos
+        color_nodos = st.sidebar.color_picker("Color de todos los nodos", value="#3498db")
+
+        config = Config(width=750, height=400, directed=dirigido, physics=True, hierarchical=False)
+        
+        # Crear grafo personalizado al hacer clic en el botón
+        if st.sidebar.button("Crear Grafo"):
+            # Crear nodos
+            for i in range(cantidad_nodos):
+                nodes.append(Node(id=f"{i+1}", size=25, label=f"N{i+1}", color=color_nodos, shape="circle"))
+
+            # Crear aristas
+            if grafo_completo:
+                # Si se selecciona grafo completo, agregar aristas entre todos los pares de nodos
+                for i in range(cantidad_nodos - 1):
+                    for j in range(i + 1, cantidad_nodos):
+                        edges.append(Edge(source=f"Nodo_{i+1}", target=f"Nodo_{j+1}", label=peso_aristas))
+                        if not dirigido:
+                            edges.append(Edge(source=f"Nodo_{j+1}", target=f"Nodo_{i+1}", label=peso_aristas))
+            elif grafo_conexo:
+                # Si se selecciona grafo conexo, agregar aristas para formar un grafo conexo
+                for i in range(cantidad_nodos - 1):
+                    edges.append(Edge(source=f"Nodo_{i+1}", target=f"Nodo_{i+2}", label=peso_aristas))
+                    if not dirigido:
+                        edges.append(Edge(source=f"Nodo_{i+2}", target=f"Nodo_{i+1}", label=peso_aristas))
+            
+            # Generar una clave única para el widget agraph
+            unique_key = f"agraph_{uuid.uuid4().hex}"
+            st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
+            st.header("Grafo")
+            grafo_personalizado = agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+                            st.session_state.grafo["config"])
+
     def salir(self):
         exit_app = st.sidebar.button("Click para salir de la aplicación")
         if exit_app:
