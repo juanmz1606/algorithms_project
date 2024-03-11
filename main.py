@@ -6,6 +6,8 @@ import psutil
 import time
 import keyboard
 import uuid
+import pyautogui
+import time
 
 
 class GraphApp:
@@ -122,25 +124,28 @@ class GraphApp:
         
         # Crear grafo personalizado al hacer clic en el botón
         if st.sidebar.button("Crear Grafo"):
+           
             # Crear nodos
             for i in range(cantidad_nodos):
                 nodes.append(Node(id=f"{i+1}", size=25, label=f"N{i+1}", color=color_nodos, shape="circle"))
 
-            # Crear aristas
             if grafo_completo:
-                # Si se selecciona grafo completo, agregar aristas entre todos los pares de nodos
+            # Si se selecciona grafo completo, agregar aristas entre todos los pares de nodos
                 for i in range(cantidad_nodos - 1):
                     for j in range(i + 1, cantidad_nodos):
                         edges.append(Edge(source=f"Nodo_{i+1}", target=f"Nodo_{j+1}", label=peso_aristas))
                         if not dirigido:
                             edges.append(Edge(source=f"Nodo_{j+1}", target=f"Nodo_{i+1}", label=peso_aristas))
+
             elif grafo_conexo:
                 # Si se selecciona grafo conexo, agregar aristas para formar un grafo conexo
                 for i in range(cantidad_nodos - 1):
                     edges.append(Edge(source=f"Nodo_{i+1}", target=f"Nodo_{i+2}", label=peso_aristas))
                     if not dirigido:
                         edges.append(Edge(source=f"Nodo_{i+2}", target=f"Nodo_{i+1}", label=peso_aristas))
-            
+
+
+      
             # Generar una clave única para el widget agraph
             unique_key = f"agraph_{uuid.uuid4().hex}"
             st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
@@ -159,7 +164,7 @@ class GraphApp:
 
     def archivo_abrir(self):
         # Widget para cargar el archivo JSON
-        uploaded_file = st.file_uploader("Selecciona un archivo JSON", type=["json"])
+        uploaded_file = st.sidebar.file_uploader("Selecciona un archivo JSON", type=["json"])
 
         if uploaded_file is not None:
             try:
@@ -185,12 +190,32 @@ class GraphApp:
                             edges.append(Edge(source=idNode, label=edge["weight"], 
                                               target=edge["nodeId"]))
 
-                config = Config(width=750, height=950, directed=True, physics=True, hierarchical=False)
+                config = Config(width=750, height=500, directed=True, physics=True, hierarchical=False)
                 
                 st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
-                st.header("Grafo")
                 agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
+                
+
+                # Agrega un retraso antes de tomar la captura de pantalla
+                time.sleep(2)
+
+                # Especifica las coordenadas (x, y) del punto de inicio de la región y su ancho y altura
+                x_inicio, y_inicio = 465, 130  # Coordenadas del punto de inicio de la región
+                ancho, altura = 890, 600  # Ancho y altura de la región
+
+                x_fin = x_inicio + ancho
+                y_fin = y_inicio + altura
+
+                # Toma una captura de pantalla de la región especificada
+                captura = pyautogui.screenshot(region=(x_inicio, y_inicio, x_fin - x_inicio, y_fin - y_inicio))
+
+                # Guardar la captura de pantalla como archivo de imagen
+                captura.save("captura_1.png")
+                captura.save("captura_2.jpg")
+
+             
+                            
                 
             except json.JSONDecodeError:
                 st.error("Error al decodificar el archivo JSON. Asegúrate de que el archivo tenga un formato JSON válido.")
