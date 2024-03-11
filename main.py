@@ -81,11 +81,6 @@ class GraphApp:
                 
                 
     def archivo_nuevo_grafo(self):
-        
-        if st.session_state.grafo["nodes"] is not None:
-            st.header("Grafo")
-            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
-                        st.session_state.grafo["config"])
 
         # Submenú para elegir entre grafo personalizado y aleatorio
         subopcion = st.sidebar.radio("Selecciona el tipo de grafo:", ["Personalizado", "Aleatorio"])
@@ -184,7 +179,6 @@ class GraphApp:
         
     def salir(self):
         if st.session_state.grafo["nodes"] is not None:
-            st.header("Grafo")
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
 
@@ -198,7 +192,6 @@ class GraphApp:
 
     def archivo_abrir(self):
         if st.session_state.grafo["nodes"] is not None:
-            st.header("Grafo")
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
 
