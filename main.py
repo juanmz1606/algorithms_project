@@ -5,7 +5,6 @@ import os
 import psutil
 import time
 import keyboard
-import uuid
 import pyautogui
 import time
 
@@ -50,8 +49,9 @@ class GraphApp:
         elif submenu_opcion == "Nuevo Grafo":
             self.archivo_nuevo_grafo()
         elif submenu_opcion == "Salir":
-            #config = Config(width=750, height=500, directed=True, physics=True, hierarchical=False)
             self.salir()
+        elif submenu_opcion == "Exportar datos":
+            self.archivo_exportar_datos()
             
           
     def editar(self):
@@ -148,16 +148,53 @@ class GraphApp:
             st.header("Grafo")
             grafo_personalizado = agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                             st.session_state.grafo["config"])
+            
+    
+    def archivo_exportar_datos(self):
+        #config = Config(width=750, height=500, directed=True, physics=True, hierarchical=False)
+        if st.session_state.grafo["nodes"] is not None:
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+                        st.session_state.grafo["config"])
+            
+        # Submenú para elegir entre grafo personalizado y aleatorio
+        subopcion = st.sidebar.radio("Selecciona el formato de exportacion:", ["Imagen", "Excel"])
 
+        if subopcion == "Imagen":
+            self.exportar_datos_imagen()
+        elif subopcion == "Excel":
+            st.sidebar.warning("La opción de excel aún no está implementada.")
+        
+
+    def exportar_datos_imagen(self):
+
+        if st.sidebar.button("Exportar Imagen"):
+            #  Agrega un retraso antes de tomar la captura de pantalla
+            time.sleep(1)
+
+            # Especifica las coordenadas (x, y) del punto de inicio de la región y su ancho y altura
+            x_inicio, y_inicio = 465, 130  # Coordenadas del punto de inicio de la región
+            ancho, altura = 890, 600  # Ancho y altura de la región
+
+            x_fin = x_inicio + ancho
+            y_fin = y_inicio + altura
+
+            # Toma una captura de pantalla de la región especificada
+            captura = pyautogui.screenshot(region=(x_inicio, y_inicio, x_fin - x_inicio, y_fin - y_inicio))
+
+            # Guardar la captura de pantalla como archivo de imagen
+            captura.save("captura_1.png")
+            captura.save("captura_2.jpg")
+
+        
     def salir(self):
         if st.session_state.grafo["nodes"] is not None:
             st.header("Grafo")
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
 
-        exit_app = st.sidebar.button("Click para salir de la aplicación")
+        exit_app = st.sidebar.button("Oprima para salir")
         if exit_app:
-            time.sleep(3)
+            time.sleep(1)
             keyboard.press_and_release('ctrl+w')
             pid = os.getpid()
             p = psutil.Process(pid)
@@ -196,30 +233,10 @@ class GraphApp:
                             edges.append(Edge(source=idNode, label=edge["weight"], 
                                               target=edge["nodeId"]))
 
-                config = Config(width=600, height=300, directed=True, physics=True, hierarchical=False)
-                
+                config = Config(width=750, height=500, directed=True, physics=True, hierarchical=False)
                 st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
                 agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
-                
-
-                # Agrega un retraso antes de tomar la captura de pantalla
-                time.sleep(2)
-
-                # Especifica las coordenadas (x, y) del punto de inicio de la región y su ancho y altura
-                x_inicio, y_inicio = 465, 130  # Coordenadas del punto de inicio de la región
-                ancho, altura = 890, 600  # Ancho y altura de la región
-
-                x_fin = x_inicio + ancho
-                y_fin = y_inicio + altura
-
-                # Toma una captura de pantalla de la región especificada
-                captura = pyautogui.screenshot(region=(x_inicio, y_inicio, x_fin - x_inicio, y_fin - y_inicio))
-
-                # Guardar la captura de pantalla como archivo de imagen
-                captura.save("captura_1.png")
-                captura.save("captura_2.jpg")
-
                 
             except json.JSONDecodeError:
                 st.error("Error al decodificar el archivo JSON. Asegúrate de que el archivo tenga un formato JSON válido.")
