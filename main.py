@@ -50,6 +50,7 @@ class GraphApp:
         elif submenu_opcion == "Nuevo Grafo":
             self.archivo_nuevo_grafo()
         elif submenu_opcion == "Salir":
+            #config = Config(width=750, height=500, directed=True, physics=True, hierarchical=False)
             self.salir()
             
           
@@ -80,9 +81,8 @@ class GraphApp:
                 
                 
     def archivo_nuevo_grafo(self):
-        if st.session_state.grafo["nodes"] is None:
-            st.title("No se ha creado ningún grafo 😞")
-        else:
+        
+        if st.session_state.grafo["nodes"] is not None:
             st.header("Grafo")
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
@@ -120,7 +120,7 @@ class GraphApp:
         # Color para todos los nodos
         color_nodos = st.sidebar.color_picker("Color de todos los nodos", value="#3498db")
 
-        config = Config(width=750, height=400, directed=dirigido, physics=True, hierarchical=False)
+        config = Config(width=600, height=300, directed=dirigido, physics=True, hierarchical=False)
         
         # Crear grafo personalizado al hacer clic en el botón
         if st.sidebar.button("Crear Grafo"):
@@ -144,16 +144,17 @@ class GraphApp:
                     if not dirigido:
                         edges.append(Edge(source=f"Nodo_{i+2}", target=f"Nodo_{i+1}", label=peso_aristas))
 
-
-      
-            # Generar una clave única para el widget agraph
-            unique_key = f"agraph_{uuid.uuid4().hex}"
             st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
             st.header("Grafo")
             grafo_personalizado = agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                             st.session_state.grafo["config"])
 
     def salir(self):
+        if st.session_state.grafo["nodes"] is not None:
+            st.header("Grafo")
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+                        st.session_state.grafo["config"])
+
         exit_app = st.sidebar.button("Click para salir de la aplicación")
         if exit_app:
             time.sleep(3)
@@ -163,6 +164,11 @@ class GraphApp:
             p.terminate()
 
     def archivo_abrir(self):
+        if st.session_state.grafo["nodes"] is not None:
+            st.header("Grafo")
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+                        st.session_state.grafo["config"])
+
         # Widget para cargar el archivo JSON
         uploaded_file = st.sidebar.file_uploader("Selecciona un archivo JSON", type=["json"])
 
@@ -190,7 +196,7 @@ class GraphApp:
                             edges.append(Edge(source=idNode, label=edge["weight"], 
                                               target=edge["nodeId"]))
 
-                config = Config(width=750, height=500, directed=True, physics=True, hierarchical=False)
+                config = Config(width=600, height=300, directed=True, physics=True, hierarchical=False)
                 
                 st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
                 agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
@@ -214,8 +220,6 @@ class GraphApp:
                 captura.save("captura_1.png")
                 captura.save("captura_2.jpg")
 
-             
-                            
                 
             except json.JSONDecodeError:
                 st.error("Error al decodificar el archivo JSON. Asegúrate de que el archivo tenga un formato JSON válido.")
