@@ -104,9 +104,7 @@ class GraphApp:
         # Configuración para el grafo personalizado
         cantidad_nodos = st.sidebar.number_input("Cantidad de nodos:", min_value=1, value=5)
 
-        grafo_completo = st.sidebar.checkbox("Grafo completo")
-
-        grafo_conexo = st.sidebar.checkbox("Grafo conexo")
+        tipo_grafo = st.sidebar.radio("Selecciona el tipo de grafo:", ["No conexo","Completo", "Conexo"])
 
         ponderado = st.sidebar.checkbox("Ponderado")
 
@@ -124,29 +122,27 @@ class GraphApp:
         
         # Crear grafo personalizado al hacer clic en el botón
         if st.sidebar.button("Crear Grafo"):
-           
             # Crear nodos
             for i in range(cantidad_nodos):
-                nodes.append(Node(id=f"{i+1}", size=25, label=f"N{i+1}", color=color_nodos, shape="circle"))
+                nodes.append(Node(id=i+1, size=25, label=f"N{i+1}", color=color_nodos, shape="circle"))
 
-            if grafo_completo:
-            # Si se selecciona grafo completo, agregar aristas entre todos los pares de nodos
+            if tipo_grafo == "Completo":
+                # Si se selecciona grafo completo, agregar aristas entre todos los pares de nodos
                 for i in range(cantidad_nodos - 1):
                     for j in range(i + 1, cantidad_nodos):
-                        edges.append(Edge(source=f"Nodo_{i+1}", target=f"Nodo_{j+1}", label=peso_aristas))
+                        edges.append(Edge(source=i + 1, target=j + 1, label=peso_aristas))
                         if not dirigido:
-                            edges.append(Edge(source=f"Nodo_{j+1}", target=f"Nodo_{i+1}", label=peso_aristas))
+                            edges.append(Edge(source=j + 1, target=i + 1, label=peso_aristas))
 
-            elif grafo_conexo:
+            elif tipo_grafo == "Conexo":
                 # Si se selecciona grafo conexo, agregar aristas para formar un grafo conexo
                 for i in range(cantidad_nodos - 1):
-                    edges.append(Edge(source=f"Nodo_{i+1}", target=f"Nodo_{i+2}", label=peso_aristas))
+                    edges.append(Edge(source=i + 1, target=i + 2, label=peso_aristas))
                     if not dirigido:
-                        edges.append(Edge(source=f"Nodo_{i+2}", target=f"Nodo_{i+1}", label=peso_aristas))
+                        edges.append(Edge(source=i + 2, target=i + 1, label=peso_aristas))
 
             st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
-            st.header("Grafo")
-            grafo_personalizado = agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                             st.session_state.grafo["config"])
             
     
