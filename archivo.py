@@ -18,15 +18,15 @@ class ArchivoApp:
                                                "Guardar", "Guardar Como", "Exportar datos",
                                                "Importar datos", "Salir"])
         if submenu_opcion == "Nuevo Grafo":
-            self.archivo_nuevo_grafo()
+            self.nuevo_grafo()
         elif submenu_opcion == "Abrir":
-            self.archivo_abrir()
+            self.abrir()
         elif submenu_opcion == "Exportar datos":
-            self.archivo_exportar_datos()
+            self.exportar_datos()
         elif submenu_opcion == "Salir":
             self.salir()
         
-    def archivo_nuevo_grafo(self):
+    def nuevo_grafo(self):
         # Submenú para elegir entre grafo personalizado y aleatorio
         subopcion = st.sidebar.radio("Selecciona el tipo de grafo:", ["Personalizado", "Aleatorio"])
 
@@ -84,7 +84,7 @@ class ArchivoApp:
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                             st.session_state.grafo["config"])
             
-    def archivo_abrir(self):
+    def abrir(self):
         # Widget para cargar el archivo JSON
         uploaded_file = st.sidebar.file_uploader("Selecciona un archivo JSON", type=["json"])
 
@@ -122,7 +122,7 @@ class ArchivoApp:
             except json.JSONDecodeError:
                 st.error("Error al decodificar el archivo JSON. Asegúrate de que el archivo tenga un formato JSON válido.")
     
-    def archivo_exportar_datos(self):
+    def exportar_datos(self):
         #config = Config(width=750, height=500, directed=True, physics=True, hierarchical=False)
         if st.session_state.grafo["nodes"] is not None:
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],

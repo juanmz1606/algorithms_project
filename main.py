@@ -1,5 +1,6 @@
 import streamlit as st
 from archivo import ArchivoApp
+from editar import EditarApp
 
 
 class GraphApp:
@@ -23,7 +24,8 @@ class GraphApp:
             archivo_app = ArchivoApp()
             archivo_app.menu()
         elif seleccion == "Editar":
-            self.editar()
+            editar_app = EditarApp()
+            editar_app.menu()
         elif seleccion == "Ejecutar":
             self.ejecutar()
         elif seleccion == "Herramientas":
@@ -32,11 +34,6 @@ class GraphApp:
             self.ventana()
         elif seleccion == "Ayuda":
             self.ayuda() 
-          
-    def editar(self):
-        st.header("Página de editar")
-        submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
-                                              ["Deshacer", "Nodo", "Arco" ])
 
     def ejecutar(self):
         st.header("Página de ejecutar")
