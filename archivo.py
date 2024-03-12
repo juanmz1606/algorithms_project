@@ -21,6 +21,8 @@ class ArchivoApp:
             self.nuevo_grafo()
         elif submenu_opcion == "Abrir":
             self.abrir()
+        elif submenu_opcion == "Cerrar":
+            self.cerrar()
         elif submenu_opcion == "Exportar datos":
             self.exportar_datos()
         elif submenu_opcion == "Salir":
@@ -170,3 +172,12 @@ class ArchivoApp:
             pid = os.getpid()
             p = psutil.Process(pid)
             p.terminate()
+
+    def cerrar(self):
+        if st.session_state.grafo["nodes"] is not None:
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+                        st.session_state.grafo["config"])
+            
+        exit_app = st.sidebar.button("Oprima para cerar")
+        if exit_app:
+           print("cerrar")
