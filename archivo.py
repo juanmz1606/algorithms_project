@@ -1,3 +1,4 @@
+import subprocess
 import streamlit as st
 from streamlit_agraph import agraph, Node, Edge, Config
 import json
@@ -25,6 +26,8 @@ class ArchivoApp:
             self.cerrar()
         elif submenu_opcion == "Exportar datos":
             self.exportar_datos()
+        elif submenu_opcion == "Importar datos":
+            self.importar_datos()
         elif submenu_opcion == "Salir":
             self.salir()
         
@@ -85,6 +88,43 @@ class ArchivoApp:
             st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                             st.session_state.grafo["config"])
+            
+    
+    def importar_datos(self):
+        # Widget para cargar el archivo JSON
+        uploaded_file = st.sidebar.file_uploader("Selecciona un archivo TXT", type=["txt"])
+
+        if uploaded_file is not None:
+        
+                # Leer el archivo cargado
+                json_data = json.load(uploaded_file)
+                nodes = []
+                edges = []
+                
+                for node in json_data["graph"][0]["data"]:
+                    idNode = node["id"]
+                    nodes.append(Node(id=idNode, size=node["radius"], label=node["label"], 
+                                      type=node["type"], data=node["data"], color="yellow", shape="circle"))
+                
+                for node in json_data["graph"][0]["data"]:
+                    idNode = node["id"]
+                    for edge in node["linkedTo"]:
+                        if edge["nodeId"] in (n.id for n in nodes):
+                            edges.append(Edge(source=idNode, label=edge["weight"], 
+                                              target=edge["nodeId"]))
+                        else:
+                            nodes.append(Node(id=edge["nodeId"], size=1, label=str(edge["nodeId"]), 
+                                              type=" ", data={}, color="yellow", shape="circle")) 
+                            edges.append(Edge(source=idNode, label=edge["weight"], 
+                                              target=edge["nodeId"]))
+
+                config = Config(width=750, height=500, directed=True, physics=True, hierarchical=False)
+                
+                st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
+                agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+                        st.session_state.grafo["config"])
+                             
+        
             
     def abrir(self):
         # Widget para cargar el archivo JSON
@@ -177,7 +217,14 @@ class ArchivoApp:
         if st.session_state.grafo["nodes"] is not None:
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
-            
-        exit_app = st.sidebar.button("Oprima para cerar")
+
+        exit_app = st.sidebar.button("Cerrar el espacio de trabajo actual")
         if exit_app:
-           print("cerrar")
+            time.sleep(1)
+            keyboard.press_and_release('ctrl+w')
+            comando = "streamlit run main.py"  
+            subprocess.run(comando, shell=True)
+            
+
+     
+        
