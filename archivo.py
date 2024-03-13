@@ -8,6 +8,7 @@ import time
 import keyboard
 import pyautogui
 import time
+import pandas as pd
 
 class ArchivoApp:
     def __init__(self):
@@ -176,8 +177,35 @@ class ArchivoApp:
         if subopcion == "Imagen":
             self.exportar_datos_imagen()
         elif subopcion == "Excel":
-            st.sidebar.warning("La opción de excel aún no está implementada.")
+            self.exportar_datos_excel()
         
+    def exportar_datos_excel(self):
+
+        if st.sidebar.button("Exportar XLSX"):
+            # Obtener nodos y aristas del grafo en session_state
+            nodos = st.session_state.grafo["nodes"]
+            aristas = st.session_state.grafo["edges"]
+
+            for nodo in aristas:
+                print("source:", nodo.source)
+                print("Label:", nodo.label)
+                print()  # Agrega una línea en blanco entre cada nodo
+
+            # Crear una lista de diccionarios con los atributos de cada nodo
+            datos_nodos = [{"id": nodo.id, "label": nodo.label, "color": nodo.color, "shape": nodo.shape} for nodo in nodos]
+            datos_aristas = [{"source": arista.source, "label": arista.label} for arista in aristas]
+            
+            # Crear DataFrame
+            df_nodos = pd.DataFrame(datos_nodos)
+            df_aristas = pd.DataFrame(datos_aristas)
+            
+            # Guardar los DataFrames en un archivo XLSX
+            with pd.ExcelWriter('grafo.xlsx') as writer:
+                df_nodos.to_excel(writer, sheet_name='nodos', index=False)
+                df_aristas.to_excel(writer, sheet_name='aristas', index=False)
+        
+            st.sidebar.success("Archivo XLSX exportado con éxito.")
+
 
     def exportar_datos_imagen(self):
 
