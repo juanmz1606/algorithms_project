@@ -54,7 +54,7 @@ class ArchivoApp:
         ponderado = st.sidebar.checkbox("Ponderado")
 
         # Peso para todas las aristas (si el grafo es ponderado)
-        peso_aristas = None
+        peso_aristas = 1
         if ponderado:
             peso_aristas = st.sidebar.number_input("Peso de todas las aristas:", min_value=1, value=1)
 
@@ -75,16 +75,16 @@ class ArchivoApp:
                 # Si se selecciona grafo completo, agregar aristas entre todos los pares de nodos
                 for i in range(cantidad_nodos - 1):
                     for j in range(i + 1, cantidad_nodos):
-                        edges.append(Edge(source=i + 1, target=j + 1, label=peso_aristas))
+                        edges.append(Edge(source=i + 1, target=j + 1, label=str(peso_aristas)))
                         if not dirigido:
-                            edges.append(Edge(source=j + 1, target=i + 1, label=peso_aristas))
+                            edges.append(Edge(source=j + 1, target=i + 1, label=str(peso_aristas)))
 
             elif tipo_grafo == "Conexo":
                 # Si se selecciona grafo conexo, agregar aristas para formar un grafo conexo
                 for i in range(cantidad_nodos - 1):
-                    edges.append(Edge(source=i + 1, target=i + 2, label=peso_aristas))
+                    edges.append(Edge(source=i + 1, target=i + 2, label=str(peso_aristas)))
                     if not dirigido:
-                        edges.append(Edge(source=i + 2, target=i + 1, label=peso_aristas))
+                        edges.append(Edge(source=i + 2, target=i + 1, label=str(peso_aristas)))
 
             st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
@@ -111,12 +111,12 @@ class ArchivoApp:
                     idNode = node["id"]
                     for edge in node["linkedTo"]:
                         if edge["nodeId"] in (n.id for n in nodes):
-                            edges.append(Edge(source=idNode, label=edge["weight"], 
+                            edges.append(Edge(source=idNode, label=str(edge["weight"]), 
                                               target=edge["nodeId"]))
                         else:
                             nodes.append(Node(id=edge["nodeId"], size=1, label=str(edge["nodeId"]), 
                                               type=" ", data={}, color="yellow", shape="circle")) 
-                            edges.append(Edge(source=idNode, label=edge["weight"], 
+                            edges.append(Edge(source=idNode, label=str(edge["weight"]), 
                                               target=edge["nodeId"]))
 
                 config = Config(width=750, height=500, directed=True, physics=True, hierarchical=False)

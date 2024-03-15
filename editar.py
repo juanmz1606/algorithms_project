@@ -37,22 +37,30 @@ class EditarApp:
         nodos_actuales = []
         cantidad_nodos = st.sidebar.number_input("Cantidad de nodos:", min_value=1, value=1)
         color_nodos = st.sidebar.color_picker("Color de los nodos", value="#3498db")
+        max_id = 0
 
         if st.sidebar.button("Agregar Nodo"):
-            nodos_actuales = st.session_state.grafo["nodes"]
-
-            # Encontrar el máximo identificador actual
-            max_id = max([node.id for node in nodos_actuales])
+            if st.session_state.grafo["nodes"] is not None:
+                nodos_actuales = st.session_state.grafo["nodes"]
+                # Encontrar el máximo identificador actual
+                max_id = max([node.id for node in nodos_actuales])
       
             for i in range(cantidad_nodos):
                 new_id = max_id + i + 1  # Asignar un identificador único
-                nodos_actuales.append(Node(id=new_id, size=25, label=f"N{new_id}", color=color_nodos, shape="circle"))
-            
+                nodos_actuales.append(Node(id=new_id, size=1, label=f"N{new_id}", 
+                                           type=" ", data={},color=color_nodos, shape="circle"))
+                
+            config = Config(width=600, height=300, directed=False, physics=True, hierarchical=False)
+                
             st.session_state.grafo["nodes"] = nodos_actuales
+            
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
             
     def editar_nodo(self):
+        if st.session_state.grafo["nodes"] is None:
+            st.sidebar.warning("No existe actualmente ningún nodo en el grafo")
+            return
         nodos_actuales = []
         nodos_actuales = st.session_state.grafo["nodes"]
             
@@ -84,6 +92,9 @@ class EditarApp:
             
             
     def eliminar_nodo(self):
+        if st.session_state.grafo["nodes"] is None:
+            st.sidebar.warning("No existe actualmente ningún nodo en el grafo")
+            return
         nodos_actuales = []
         nodos_actuales = st.session_state.grafo["nodes"]
             
@@ -103,9 +114,12 @@ class EditarApp:
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
 
-                 
     def arco(self):
-        submenu_opcion_arco = st.sidebar.selectbox("Modificar arco:", 
+        if st.session_state.grafo["nodes"] is not None:
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+                        st.session_state.grafo["config"])
+            
+        submenu_opcion_arco = st.sidebar.radio("Modificar arco:", 
                                               ["Agregar", "Editar", "Eliminar" ])
         if submenu_opcion_arco == "Agregar":
             self.agregar_arco()
@@ -115,16 +129,76 @@ class EditarApp:
             self.eliminar_arco()
             
     def agregar_arco(self):
-        if st.session_state.grafo["nodes"] is not None:
-            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
-                        st.session_state.grafo["config"])
+        if st.session_state.grafo["nodes"] is None or len(st.session_state.grafo["nodes"]) <= 1:
+            st.sidebar.warning("Debe existir mas de un nodo para agregar un arco")
+            return
+        
+        nodos_actuales = st.session_state.grafo["nodes"]
+        edges = st.session_state.grafo["edges"]
+        peso_arista = st.sidebar.number_input("Peso de la arista:", min_value=1, value=1)
+
+        # Aquí deberías tener una lista de identificadores de nodos disponibles para seleccionar
+        source_id = st.sidebar.selectbox("Seleccionar nodo de origen:", [node.id for node in nodos_actuales], key=100)
+        target_id = st.sidebar.selectbox("Seleccionar nodo de destino:", [node.id for node in nodos_actuales if node.id != source_id], key=111)
+        
+        if st.sidebar.button("Agregar Arista"):
+            edges.append(Edge(source=int(source_id), target=int(target_id), label=str(peso_arista)))
+            # Actualizar el grafo en el estado de la sesión
+            st.session_state.grafo["edges"] = edges
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"], st.session_state.grafo["config"])
     
     def editar_arco(self):
-        if st.session_state.grafo["nodes"] is not None:
-            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
-                        st.session_state.grafo["config"])
+        edges = st.session_state.grafo["edges"]
+        if not edges:
+            st.sidebar.warning("No hay arcos en el grafo para editar.")
+            return
+
+        nodos_actuales = st.session_state.grafo["nodes"]
+
+        # Obtener los IDs de los nodos del grafo
+        ids_nodos = [node.id for node in nodos_actuales]
+
+        # Crear una lista de selección con los IDs de los nodos
+        source_id = st.sidebar.selectbox("Seleccionar nodo de origen:", options=ids_nodos)
+        target_id = st.sidebar.selectbox("Seleccionar nodo de destino:", options=ids_nodos)
+
+        edge_seleccionado = None
+        for edge in edges:
+            if edge.source == source_id and edge.target == target_id:
+                edge_seleccionado = edge
+                break
+
+        if edge_seleccionado is None:
+            st.sidebar.warning("No se encontró el arco seleccionado en el grafo.")
+            return
+
+        # Campos de entrada para editar el arco seleccionado
+        nuevo_source_id = st.sidebar.selectbox("Nuevo nodo de origen:", options=ids_nodos)
+        nuevo_target_id = st.sidebar.selectbox("Nuevo nodo de destino:", options=ids_nodos)
+        nuevo_peso = st.sidebar.number_input("Nuevo peso:", min_value=1, value=edge_seleccionado.label)
+
+        # Verificar si los nuevos nodos de origen y destino existen en el grafo
+        if nuevo_source_id not in ids_nodos or nuevo_target_id not in ids_nodos:
+            st.sidebar.warning("Uno o ambos de los nodos seleccionados no existen en el grafo.")
+            return
+
+        # Verificar si ya existe una arista entre los nuevos nodos de origen y destino
+        for edge in edges:
+            if (edge.source == nuevo_source_id and edge.target == nuevo_target_id) or \
+            (edge.source == nuevo_target_id and edge.target == nuevo_source_id):
+                st.sidebar.warning("Ya existe una arista entre los nuevos nodos de origen y destino.")
+                return
+
+        if st.sidebar.button("Guardar cambios"):
+            # Actualizar el arco seleccionado con los nuevos valores
+            edge_seleccionado.source = nuevo_source_id
+            edge_seleccionado.target = nuevo_target_id
+            edge_seleccionado.label = nuevo_peso
+
+            # Actualizar el grafo en session_state
+            st.session_state.grafo["edges"] = edges
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"], st.session_state.grafo["config"])
+
     
     def eliminar_arco(self):
-        if st.session_state.grafo["nodes"] is not None:
-            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
-                        st.session_state.grafo["config"])
+        pass
