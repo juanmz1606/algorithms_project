@@ -53,7 +53,6 @@ class EditarApp:
                 nodos_actuales.append(Node(id=new_id, size=1, label=f"N{new_id}", 
                                            type=" ", data={},color=color_nodos, shape="circle"))
                 
-            config = Config(width=600, height=300, directed=False, physics=True, hierarchical=False)
             st.session_state.grafo["nodes"] = nodos_actuales
             
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
@@ -141,20 +140,21 @@ class EditarApp:
         nodos_actuales = st.session_state.grafo["nodes"]
         edges = st.session_state.grafo["edges"]
         peso_arista = st.sidebar.number_input("Peso de la arista:", min_value=1, value=1)
+        color_arista = st.sidebar.color_picker("Color de la nueva arista", value="#000000")
 
         # Aquí deberías tener una lista de identificadores de nodos disponibles para seleccionar
         source_id = st.sidebar.selectbox("Seleccionar nodo de origen:", [node.id for node in nodos_actuales], key=100)
         target_id = st.sidebar.selectbox("Seleccionar nodo de destino:", [node.id for node in nodos_actuales if node.id != source_id], key=111)
         
         if st.sidebar.button("Agregar Arista"):
-            edges.append(Edge(source=int(source_id), target=int(target_id), label=str(peso_arista)))
+            edges.append(Edge(source=int(source_id), target=int(target_id), label=peso_arista, color=color_arista))
             # Actualizar el grafo en el estado de la sesión
             st.session_state.grafo["edges"] = edges
-            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"], st.session_state.grafo["config"])
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"], 
+                   st.session_state.grafo["config"])
             st.rerun()
     
     def editar_arco(self):
-        print([edge.to_dict() for edge in st.session_state.grafo["edges"]])
         edges = st.session_state.grafo["edges"]
         # Verificar si edges es None
         if edges is None:
@@ -184,7 +184,8 @@ class EditarApp:
         # Campos de entrada para editar el arco seleccionado
         nuevo_source_id = st.sidebar.selectbox("Nuevo nodo de origen:", options=ids_nodos)
         nuevo_target_id = st.sidebar.selectbox("Nuevo nodo de destino:", options=ids_nodos)
-        nuevo_peso = st.sidebar.number_input("Nuevo peso:", min_value=1, value=int(edge_seleccionado.label))
+        nuevo_peso = st.sidebar.number_input("Nuevo peso:", min_value=0, value=int(edge_seleccionado.label))
+        color_arista = st.sidebar.color_picker("Color de la nueva arista", value="#000000")
 
         # Verificar si ya existe una arista entre los nuevos nodos de origen y destino
         for edge in edges:
@@ -197,7 +198,7 @@ class EditarApp:
             edges.pop(index_edge_seleccionado)
             
             edges.append(Edge(source=nuevo_source_id, 
-                              target=nuevo_target_id, label=str(nuevo_peso)))  # Agregamos la nueva arista
+                              target=nuevo_target_id, label=nuevo_peso, color=color_arista))  # Agregamos la nueva arista
 
             # Actualizar el grafo en session_state
             st.session_state.grafo["edges"] = edges

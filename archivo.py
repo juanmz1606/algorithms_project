@@ -9,6 +9,7 @@ import keyboard
 import pyautogui
 import time
 import pandas as pd
+import random
 
 class ArchivoApp:
     def __init__(self):
@@ -44,8 +45,7 @@ class ArchivoApp:
         if subopcion == "Personalizado":
             self.crear_grafo_personalizado()
         elif subopcion == "Aleatorio":
-            # Implementación para el grafo aleatorio
-            st.sidebar.warning("La opción de grafo aleatorio aún no está implementada.")
+            self.crear_grafo_aleatorio()
     
 
     def guardar_grafo(self):
@@ -128,7 +128,7 @@ class ArchivoApp:
 
         # Color para todos los nodos
         color_nodos = st.sidebar.color_picker("Color de todos los nodos", value="#3498db")
-
+        
         config = Config(width=600, height=300, directed=dirigido, physics=True, hierarchical=False)
         
         # Crear grafo personalizado al hacer clic en el botón
@@ -141,24 +141,73 @@ class ArchivoApp:
                 # Si se selecciona grafo completo, agregar aristas entre todos los pares de nodos
                 for i in range(cantidad_nodos - 1):
                     for j in range(i + 1, cantidad_nodos):
-                        edges.append(Edge(source=i + 1, target=j + 1, label=str(peso_aristas)))
+                        edges.append(Edge(source=i + 1, target=j + 1, label=peso_aristas, 
+                                          color="#000000"))
                         if not dirigido:
-                            edges.append(Edge(source=j + 1, target=i + 1, label=str(peso_aristas)))
+                            edges.append(Edge(source=j + 1, target=i + 1, label=peso_aristas, 
+                                              color="#000000"))
 
             elif tipo_grafo == "Conexo":
                 # Si se selecciona grafo conexo, agregar aristas para formar un grafo conexo
                 for i in range(cantidad_nodos - 1):
-                    edges.append(Edge(source=i + 1, target=i + 2, label=str(peso_aristas)))
+                    edges.append(Edge(source=i + 1, target=i + 2, label=peso_aristas, color="#000000"))
                     if not dirigido:
-                        edges.append(Edge(source=i + 2, target=i + 1, label=str(peso_aristas)))
+                        edges.append(Edge(source=i + 2, target=i + 1, label=peso_aristas, color="#000000"))
 
             st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
             
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                             st.session_state.grafo["config"])
             
+    def crear_grafo_aleatorio(self):
+        nodes = []
+        edges = []
+        
+        # Configuración para el grafo aleatorio
+        cantidad_nodos = st.sidebar.number_input("Cantidad de nodos:", min_value=1, value=5)
+        
+        # Selección aleatoria del tipo de grafo
+        tipo_grafo = random.choice(["Completo", "Conexo"])
+
+        ponderado = st.sidebar.checkbox("Ponderado")
+
+        # Peso para todas las aristas (si el grafo es ponderado)
+        peso_aristas = 0
+        if ponderado:
+            peso_aristas = st.sidebar.number_input("Peso de todas las aristas:", min_value=1, value=1)
+
+        dirigido = st.sidebar.checkbox("Dirigido")
+
+        # Color para todos los nodos
+        color_nodos = st.sidebar.color_picker("Color de todos los nodos", value="#3498db")
+
+        config = Config(width=600, height=300, directed=dirigido, physics=True, hierarchical=False)
+        
+        # Crear grafo aleatorio al hacer clic en el botón
+        if st.sidebar.button("Crear Grafo"):
+            # Crear nodos
+            for i in range(cantidad_nodos):
+                nodes.append(Node(id=i+1, size=25, label=f"N{i+1}", color=color_nodos, shape="circle"))
+
+            if tipo_grafo == "Completo":
+                # Si se selecciona grafo completo, agregar aristas entre todos los pares de nodos
+                for i in range(cantidad_nodos - 1):
+                    for j in range(i + 1, cantidad_nodos):
+                        edges.append(Edge(source=i + 1, target=j + 1, label=peso_aristas, color="#000000"))
+                        if not dirigido:
+                            edges.append(Edge(source=j + 1, target=i + 1, label=peso_aristas, color="#000000"))
+
+            elif tipo_grafo == "Conexo":
+                # Si se selecciona grafo conexo, agregar aristas para formar un grafo conexo
+                for i in range(cantidad_nodos - 1):
+                    edges.append(Edge(source=i + 1, target=i + 2, label=peso_aristas, color="#000000"))
+                    if not dirigido:
+                        edges.append(Edge(source=i + 2, target=i + 1, label=peso_aristas, color="#000000"))
+
+            st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
             
-    
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"], st.session_state.grafo["config"])
+        
     def importar_datos(self):
         # Widget para cargar el archivo JSON
         uploaded_file = st.sidebar.file_uploader("Selecciona un archivo TXT", type=["txt"])
@@ -179,15 +228,15 @@ class ArchivoApp:
                     idNode = node["id"]
                     for edge in node["linkedTo"]:
                         if edge["nodeId"] in (n.id for n in nodes):
-                            edges.append(Edge(source=idNode, label=str(edge["weight"]), 
-                                              target=edge["nodeId"]))
+                            edges.append(Edge(source=idNode, label=edge["weight"], 
+                                              target=edge["nodeId"], color="#000000"))
                         else:
                             nodes.append(Node(id=edge["nodeId"], size=1, label=str(edge["nodeId"]), 
                                               type=" ", data={}, color="yellow", shape="circle")) 
-                            edges.append(Edge(source=idNode, label=str(edge["weight"]), 
-                                              target=edge["nodeId"]))
+                            edges.append(Edge(source=idNode, label=edge["weight"], 
+                                              target=edge["nodeId"], color="#000000"))
 
-                config = Config(width=750, height=500, directed=True, physics=True, hierarchical=False)
+                config = Config(width=750, height=500, directed=False, physics=True, hierarchical=False)
                 
                 st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
                 agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
@@ -216,14 +265,14 @@ class ArchivoApp:
                     for edge in node["linkedTo"]:
                         if edge["nodeId"] in (n.id for n in nodes):
                             edges.append(Edge(source=idNode, label=edge["weight"], 
-                                              target=edge["nodeId"]))
+                                              target=edge["nodeId"], color="#000000"))
                         else:
                             nodes.append(Node(id=edge["nodeId"], size=1, label=str(edge["nodeId"]), 
                                               type=" ", data={}, color="yellow", shape="circle")) 
                             edges.append(Edge(source=idNode, label=edge["weight"], 
-                                              target=edge["nodeId"]))
+                                              target=edge["nodeId"], color="#000000"))
 
-                config = Config(width=750, height=500, directed=True, physics=True, hierarchical=False)
+                config = Config(width=750, height=500, directed=False, physics=True, hierarchical=False)
                 
                 st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
                 agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
@@ -234,7 +283,6 @@ class ArchivoApp:
                 st.error("Error al decodificar el archivo JSON. Asegúrate de que el archivo tenga un formato JSON válido.")
     
     def exportar_datos(self):
-        #config = Config(width=750, height=500, directed=True, physics=True, hierarchical=False)
         if st.session_state.grafo["nodes"] is not None:
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
