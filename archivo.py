@@ -258,7 +258,7 @@ class ArchivoApp:
                 for node in json_data["graph"][0]["data"]:
                     idNode = node["id"]
                     nodes.append(Node(id=idNode, size=node["radius"], label=node["label"], 
-                                      type=node["type"], data=node["data"], color="yellow", shape="circle"))
+                                      type=node["type"], data=node["data"], color="#ffff00", shape="circle"))
                 
                 for node in json_data["graph"][0]["data"]:
                     idNode = node["id"]
@@ -268,7 +268,7 @@ class ArchivoApp:
                                               target=edge["nodeId"], color="#000000"))
                         else:
                             nodes.append(Node(id=edge["nodeId"], size=1, label=str(edge["nodeId"]), 
-                                              type=" ", data={}, color="yellow", shape="circle")) 
+                                              type=" ", data={}, color="#ffff00", shape="circle")) 
                             edges.append(Edge(source=idNode, label=edge["weight"], 
                                               target=edge["nodeId"], color="#000000"))
 
@@ -337,6 +337,8 @@ class ArchivoApp:
             # Guardar la captura de pantalla como archivo de imagen
             captura.save("captura_1.png")
             captura.save("captura_2.jpg")
+
+            st.success("Grafo guardado con éxito como imagen.")
 
         
     def salir(self):
