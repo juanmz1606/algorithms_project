@@ -1,6 +1,7 @@
 import streamlit as st
 from archivo import ArchivoApp
 from editar import EditarApp
+from ventana import VentanaApp
 
 
 class GraphApp:
@@ -31,7 +32,8 @@ class GraphApp:
         elif seleccion == "Herramientas":
             self.herramientas()
         elif seleccion == "Ventana":
-            self.ventana()
+            ventana_app = VentanaApp()
+            ventana_app.menu()
         elif seleccion == "Ayuda":
             self.ayuda() 
 
