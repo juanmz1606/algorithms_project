@@ -56,6 +56,7 @@ class EditarApp:
             
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
+            st.rerun()
             
     def editar_nodo(self):
         if st.session_state.grafo["nodes"] is None:
@@ -89,6 +90,7 @@ class EditarApp:
                 st.session_state.grafo["nodes"] = nodos_actuales
                 agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
+                st.rerun()
             
             
     def eliminar_nodo(self):
@@ -113,6 +115,7 @@ class EditarApp:
 
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
+            st.rerun()
 
     def arco(self):
         if st.session_state.grafo["nodes"] is not None:
