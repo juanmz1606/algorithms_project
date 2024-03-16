@@ -205,4 +205,32 @@ class EditarApp:
             st.rerun()
     
     def eliminar_arco(self):
-        pass
+        edges = st.session_state.grafo["edges"]
+        
+        if edges is None or len(edges) == 0:
+            st.sidebar.warning("No hay arcos en el grafo para eliminar.")
+            return
+        
+        # Obtener los IDs de los nodos del grafo
+        nodos_actuales = st.session_state.grafo["nodes"]
+        ids_nodos = [node.id for node in nodos_actuales]
+        
+        # Crear una lista de selección con los IDs de los nodos
+        source_id = st.sidebar.selectbox("Seleccionar nodo de origen:", options=ids_nodos)
+        target_id = st.sidebar.selectbox("Seleccionar nodo de destino:", options=ids_nodos)
+        
+        edge_seleccionado = None
+        for edge in edges:
+            if edge.source == source_id and edge.to == target_id:
+                edge_seleccionado = edge
+                break
+        
+        if edge_seleccionado is None:
+            st.sidebar.warning("No se encontró el arco seleccionado en el grafo.")
+            return
+        
+        if st.sidebar.button("Eliminar arco"):
+            edges.remove(edge_seleccionado)
+            st.session_state.grafo["edges"] = edges
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"], st.session_state.grafo["config"])
+            st.rerun()
