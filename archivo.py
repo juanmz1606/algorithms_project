@@ -25,12 +25,17 @@ class ArchivoApp:
             self.abrir()
         elif submenu_opcion == "Cerrar":
             self.cerrar()
+        elif submenu_opcion == "Guardar":
+            self.guardar_grafo()
+        elif submenu_opcion == "Guardar Como":
+            self.guardar_grafo_como()
         elif submenu_opcion == "Exportar datos":
             self.exportar_datos()
         elif submenu_opcion == "Importar datos":
             self.importar_datos()
         elif submenu_opcion == "Salir":
             self.salir()
+
         
     def nuevo_grafo(self):
         # Submenú para elegir entre grafo personalizado y aleatorio
@@ -41,7 +46,68 @@ class ArchivoApp:
         elif subopcion == "Aleatorio":
             # Implementación para el grafo aleatorio
             st.sidebar.warning("La opción de grafo aleatorio aún no está implementada.")
+    
+
+    def guardar_grafo(self):
+        if st.session_state.grafo["nodes"] is not None:
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+                        st.session_state.grafo["config"])
             
+        if st.sidebar.button("Oprima para Guardar"):
+            # Guardar el grafo en formato JSON
+            grafo = {
+            "graph": {
+                "nodes": [],
+                "edges": [],
+            }
+        }
+        
+            for node in st.session_state.grafo["nodes"]:
+                grafo["graph"]["nodes"].append({"id": node.id, "size": node.size, "label": node.label, 
+                                                    "color": node.color, "shape": node.shape})
+
+            for edge in st.session_state.grafo["edges"]:
+                grafo["graph"]["edges"].append({"source": edge.source, "label": edge.label})
+
+            # Guardar el grafo en formato JSON    
+            with open("grafo.json", "w") as f:
+                json.dump(grafo, f, indent=3)
+                
+                st.success("Grafo guardado con éxito en el archivo grafo.json.")
+        
+
+    def guardar_grafo_como(self):
+        if st.session_state.grafo["nodes"] is not None:
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+                        st.session_state.grafo["config"])
+            
+        if st.sidebar.button("Guardar Como"):
+                nombre_archivo = st.sidebar.text_input("Nombre del archivo sin extension: ")
+                st.sidebar.write("Click en el boton 'Guardar como' al ingresar el nombre del archivo.")
+                if nombre_archivo != "":
+                    grafo = {
+                    "graph": {
+                        "nodes": [],
+                        "edges": [],
+                    }
+                }
+                    for node in st.session_state.grafo["nodes"]:
+                        grafo["graph"]["nodes"].append({"id": node.id, "size": node.size, "label": node.label, 
+                                                        "color": node.color, "shape": node.shape})
+
+                    for edge in st.session_state.grafo["edges"]:
+                        grafo["graph"]["edges"].append({"source": edge.source, "label": edge.label})
+                    
+                    # Guardar el grafo en formato JSON    
+                    with open(nombre_archivo + ".json", "w") as f:
+                        json.dump(grafo, f, indent=3)
+
+                    
+                    st.success(f"Grafo guardado como {nombre_archivo}.json ")
+                elif nombre_archivo == "":
+                    st.error("Por favor, ingresa un nombre de archivo.")
+        
+          
     def crear_grafo_personalizado(self):
         nodes = []
         edges = []
@@ -87,8 +153,10 @@ class ArchivoApp:
                         edges.append(Edge(source=i + 2, target=i + 1, label=str(peso_aristas)))
 
             st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
+            
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                             st.session_state.grafo["config"])
+            
             
     
     def importar_datos(self):
