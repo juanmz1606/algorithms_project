@@ -54,26 +54,53 @@ class ArchivoApp:
                         st.session_state.grafo["config"])
             
         if st.sidebar.button("Oprima para Guardar"):
-            # Guardar el grafo en formato JSON
+            # Inicializar la estructura del grafo en formato JSON
             grafo = {
-            "graph": {
-                "nodes": [],
-                "edges": [],
+                "graph": [],
+                "generalData1": 100,
+                "generalData2": "Alg",
+                "generalData3": 300
             }
-        }
-        
-            for node in st.session_state.grafo["nodes"]:
-                grafo["graph"]["nodes"].append({"id": node.id, "size": node.size, "label": node.label, 
-                                                    "color": node.color, "shape": node.shape})
 
-            for edge in st.session_state.grafo["edges"]:
-                grafo["graph"]["edges"].append({"source": edge.source,"to": edge.to,"label": int(edge.label)})
+            # Obtener los nodos y aristas del grafo
+            nodos = st.session_state.grafo["nodes"]
+            aristas = st.session_state.grafo["edges"]
 
-            # Guardar el grafo en formato JSON    
-            with open("grafo.json", "w") as f:
-                json.dump(grafo, f, indent=3)
-                
-                st.success("Grafo guardado con éxito en el archivo grafo.json.")
+            # Procesar nodos
+            nodos_json = []
+            for nodo in nodos:
+                nodo_json = {
+                    "id": nodo.id,
+                    "label": nodo.label,
+                    "data": {},
+                    "type": " ",
+                    "linkedTo": [],
+                    "radius": nodo.size,  # Modificar según necesites
+                    "coordenates": {"x": 0, "y": 0}  # Modificar según necesites
+                }
+                nodos_json.append(nodo_json)
+
+            # Procesar aristas
+            for arista in aristas:
+                nodo_origen = next((nodo for nodo in nodos_json if nodo["id"] == arista.source), None)
+                nodo_destino = next((nodo for nodo in nodos_json if nodo["id"] == arista.to), None)
+                if nodo_origen and nodo_destino:
+                    nodo_origen["linkedTo"].append({
+                        "nodeId": arista.to,
+                        "weight": arista.label
+                    })
+
+            # Agregar los nodos procesados al grafo
+            grafo["graph"].append({
+                "name": "G",
+                "data": nodos_json
+            })
+
+            # Guardar el grafo en formato JSON
+            with open("grafo.json", "w") as file:
+                json.dump(grafo, file, indent=2)
+
+            st.sidebar.success("Grafo guardado exitosamente como grafo.json")
         
 
     def guardar_grafo_como(self):
@@ -85,30 +112,62 @@ class ArchivoApp:
             
         if st.sidebar.button("Guardar Como"):
                 if nombre_archivo != "":
+                    # Inicializar la estructura del grafo en formato JSON
                     grafo = {
-                    "graph": {
-                        "nodes": [],
-                        "edges": [],
+                        "graph": [],
+                        "generalData1": 100,
+                        "generalData2": "Alg",
+                        "generalData3": 300
                     }
-                }
-                    for node in st.session_state.grafo["nodes"]:
-                        grafo["graph"]["nodes"].append({"id": node.id, "size": node.size, "label": node.label, 
-                                                        "color": node.color, "shape": node.shape})
 
-                    for edge in st.session_state.grafo["edges"]:
-                        grafo["graph"]["edges"].append({"source": edge.source,"to": edge.to,"label": int(edge.label)})
-                    
+                    # Obtener los nodos y aristas del grafo
+                    nodos = st.session_state.grafo["nodes"]
+                    aristas = st.session_state.grafo["edges"]
+
+                    # Procesar nodos
+                    nodos_json = []
+                    for nodo in nodos:
+                        nodo_json = {
+                            "id": nodo.id,
+                            "label": nodo.label,
+                            "data": {},
+                            "type": " ",
+                            "linkedTo": [],
+                            "radius": nodo.size,  # Modificar según necesites
+                            "coordenates": {"x": 0, "y": 0}  # Modificar según necesites
+                        }
+                        nodos_json.append(nodo_json)
+
+                    # Procesar aristas
+                    for arista in aristas:
+                        nodo_origen = next((nodo for nodo in nodos_json if nodo["id"] == arista.source), None)
+                        nodo_destino = next((nodo for nodo in nodos_json if nodo["id"] == arista.to), None)
+                        if nodo_origen and nodo_destino:
+                            nodo_origen["linkedTo"].append({
+                                "nodeId": arista.to,
+                                "weight": arista.label
+                            })
+
+                    # Agregar los nodos procesados al grafo
+                    grafo["graph"].append({
+                        "name": "G",
+                        "data": nodos_json
+                    })
                     # Guardar el grafo en formato JSON    
                     with open(nombre_archivo + ".json", "w") as f:
-                        json.dump(grafo, f, indent=3)
+                        json.dump(grafo, f, indent=2)
 
                     
-                    st.success(f"Grafo guardado como {nombre_archivo}.json ")
+                    st.success(f"Grafo guardado como {nombre_archivo}.json")
                 elif nombre_archivo == "":
                     st.error("Por favor, ingresa un nombre de archivo.")
         
           
     def crear_grafo_personalizado(self):
+        if st.session_state.grafo["nodes"] is not None:
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+                        st.session_state.grafo["config"])
+        
         nodes = []
         edges = []
         
@@ -128,14 +187,14 @@ class ArchivoApp:
 
         # Color para todos los nodos
         color_nodos = st.sidebar.color_picker("Color de todos los nodos", value="#3498db")
-        
-        config = Config(width=600, height=300, directed=dirigido, physics=True, hierarchical=False)
+        config = Config(width=600, height=450, directed=dirigido, physics=True, hierarchical=False)
         
         # Crear grafo personalizado al hacer clic en el botón
         if st.sidebar.button("Crear Grafo"):
             # Crear nodos
             for i in range(cantidad_nodos):
-                nodes.append(Node(id=i+1, size=25, label=f"N{i+1}", color=color_nodos, shape="circle"))
+                nodes.append(Node(id=i+1, size=float(25), label=f"N{i+1}", 
+                                  color=color_nodos, shape="circle"))
 
             if tipo_grafo == "Completo":
                 # Si se selecciona grafo completo, agregar aristas entre todos los pares de nodos
@@ -158,8 +217,12 @@ class ArchivoApp:
             
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                             st.session_state.grafo["config"])
+            st.rerun()
             
     def crear_grafo_aleatorio(self):
+        if st.session_state.grafo["nodes"] is not None:
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+                        st.session_state.grafo["config"])
         nodes = []
         edges = []
         
@@ -181,13 +244,13 @@ class ArchivoApp:
         # Color para todos los nodos
         color_nodos = st.sidebar.color_picker("Color de todos los nodos", value="#3498db")
 
-        config = Config(width=600, height=300, directed=dirigido, physics=True, hierarchical=False)
+        config = Config(width=600, height=450, directed=dirigido, physics=True, hierarchical=False)
         
         # Crear grafo aleatorio al hacer clic en el botón
         if st.sidebar.button("Crear Grafo"):
             # Crear nodos
             for i in range(cantidad_nodos):
-                nodes.append(Node(id=i+1, size=25, label=f"N{i+1}", color=color_nodos, shape="circle"))
+                nodes.append(Node(id=i+1, size=float(25), label=f"N{i+1}", color=color_nodos, shape="circle"))
 
             if tipo_grafo == "Completo":
                 # Si se selecciona grafo completo, agregar aristas entre todos los pares de nodos
@@ -207,6 +270,7 @@ class ArchivoApp:
             st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
             
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"], st.session_state.grafo["config"])
+            st.rerun()
         
     def importar_datos(self):
         # Widget para cargar el archivo JSON
@@ -222,7 +286,7 @@ class ArchivoApp:
                 for node in json_data["graph"][0]["data"]:
                     idNode = node["id"]
                     nodes.append(Node(id=idNode, size=node["radius"], label=node["label"], 
-                                      type=node["type"], data=node["data"], color="yellow", shape="circle"))
+                                      type=node["type"], data=node["data"], color="#ffff00", shape="circle"))
                 
                 for node in json_data["graph"][0]["data"]:
                     idNode = node["id"]
@@ -231,16 +295,17 @@ class ArchivoApp:
                             edges.append(Edge(source=idNode, label=edge["weight"], 
                                               target=edge["nodeId"], color="#000000"))
                         else:
-                            nodes.append(Node(id=edge["nodeId"], size=1, label=str(edge["nodeId"]), 
-                                              type=" ", data={}, color="yellow", shape="circle")) 
+                            nodes.append(Node(id=edge["nodeId"], size=float(25), label=str(edge["nodeId"]), 
+                                              type=" ", data={}, color="#ffff00", shape="circle")) 
                             edges.append(Edge(source=idNode, label=edge["weight"], 
                                               target=edge["nodeId"], color="#000000"))
 
-                config = Config(width=750, height=500, directed=False, physics=True, hierarchical=False)
+                config = Config(width=600, height=450, directed=False, physics=True, hierarchical=False)
                 
                 st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
                 agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
+                st.rerun()
                              
         
             
@@ -267,21 +332,21 @@ class ArchivoApp:
                             edges.append(Edge(source=idNode, label=edge["weight"], 
                                               target=edge["nodeId"], color="#000000"))
                         else:
-                            nodes.append(Node(id=edge["nodeId"], size=1, label=str(edge["nodeId"]), 
+                            nodes.append(Node(id=edge["nodeId"], size=float(25), label=str(edge["nodeId"]), 
                                               type=" ", data={}, color="#ffff00", shape="circle")) 
                             edges.append(Edge(source=idNode, label=edge["weight"], 
                                               target=edge["nodeId"], color="#000000"))
 
-                config = Config(width=750, height=500, directed=False, physics=True, hierarchical=False)
+                config = Config(width=600, height=450, directed=False, physics=True, hierarchical=False)
                 
                 st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
                 agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
-                    
-                    
+                st.rerun()
+                
             except json.JSONDecodeError:
                 st.error("Error al decodificar el archivo JSON. Asegúrate de que el archivo tenga un formato JSON válido.")
-    
+            
     def exportar_datos(self):
         if st.session_state.grafo["nodes"] is not None:
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
@@ -325,8 +390,8 @@ class ArchivoApp:
             time.sleep(1)
 
             # Especifica las coordenadas (x, y) del punto de inicio de la región y su ancho y altura
-            x_inicio, y_inicio = 465, 130  # Coordenadas del punto de inicio de la región
-            ancho, altura = 890, 600  # Ancho y altura de la región
+            x_inicio, y_inicio = 465, 155  # Coordenadas del punto de inicio de la región
+            ancho, altura = 890, 575  # Ancho y altura de la región
 
             x_fin = x_inicio + ancho
             y_fin = y_inicio + altura

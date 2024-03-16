@@ -50,7 +50,7 @@ class EditarApp:
       
             for i in range(cantidad_nodos):
                 new_id = max_id + i + 1  # Asignar un identificador único
-                nodos_actuales.append(Node(id=new_id, size=1, label=f"N{new_id}", 
+                nodos_actuales.append(Node(id=new_id, size=float(25), label=f"N{new_id}", 
                                            type=" ", data={},color=color_nodos, shape="circle"))
                 
             st.session_state.grafo["nodes"] = nodos_actuales
@@ -63,7 +63,7 @@ class EditarApp:
         if st.session_state.grafo["nodes"] is None:
             st.sidebar.warning("No existe actualmente ningún nodo en el grafo")
             return
-        nodos_actuales = []
+        
         nodos_actuales = st.session_state.grafo["nodes"]
             
         # Obtener los IDs de los nodos del grafo
@@ -79,7 +79,7 @@ class EditarApp:
             # Campos de entrada para editar el nodo seleccionado
             nuevo_color = st.sidebar.color_picker("Nuevo color:", value=nodo_seleccionado.color)
             nueva_etiqueta = st.sidebar.text_input("Nueva etiqueta:", value=nodo_seleccionado.label)
-            nuevo_tamaño = st.sidebar.number_input("Nuevo tamaño:", min_value=1, value=nodo_seleccionado.size)
+            nuevo_tamaño = st.sidebar.number_input("Nuevo tamaño:", min_value=0.1, value=nodo_seleccionado.size)
             
             if st.sidebar.button("Guardar cambios"):
                 # Actualizar el nodo seleccionado con los nuevos valores
@@ -141,13 +141,16 @@ class EditarApp:
         edges = st.session_state.grafo["edges"]
         peso_arista = st.sidebar.number_input("Peso de la arista:", min_value=1, value=1)
         color_arista = st.sidebar.color_picker("Color de la nueva arista", value="#000000")
+        punteada = st.sidebar.checkbox("Arista punteada", value=False)
+    
 
         # Aquí deberías tener una lista de identificadores de nodos disponibles para seleccionar
         source_id = st.sidebar.selectbox("Seleccionar nodo de origen:", [node.id for node in nodos_actuales], key=100)
         target_id = st.sidebar.selectbox("Seleccionar nodo de destino:", [node.id for node in nodos_actuales if node.id != source_id], key=111)
         
         if st.sidebar.button("Agregar Arista"):
-            edges.append(Edge(source=int(source_id), target=int(target_id), label=peso_arista, color=color_arista))
+            edges.append(Edge(source=int(source_id), target=int(target_id), 
+                              label=peso_arista, color=color_arista, dashes=punteada))
             # Actualizar el grafo en el estado de la sesión
             st.session_state.grafo["edges"] = edges
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"], 
@@ -186,6 +189,7 @@ class EditarApp:
         nuevo_target_id = st.sidebar.selectbox("Nuevo nodo de destino:", options=ids_nodos)
         nuevo_peso = st.sidebar.number_input("Nuevo peso:", min_value=0, value=int(edge_seleccionado.label))
         color_arista = st.sidebar.color_picker("Color de la nueva arista", value="#000000")
+        punteada = st.sidebar.checkbox("Arista punteada", value=False)
 
         # Verificar si ya existe una arista entre los nuevos nodos de origen y destino
         for edge in edges:
@@ -198,7 +202,7 @@ class EditarApp:
             edges.pop(index_edge_seleccionado)
             
             edges.append(Edge(source=nuevo_source_id, 
-                              target=nuevo_target_id, label=nuevo_peso, color=color_arista))  # Agregamos la nueva arista
+                              target=nuevo_target_id, label=nuevo_peso, color=color_arista,dashes = punteada))  # Agregamos la nueva arista
 
             # Actualizar el grafo en session_state
             st.session_state.grafo["edges"] = edges
