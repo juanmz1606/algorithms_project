@@ -67,7 +67,7 @@ class ArchivoApp:
                                                     "color": node.color, "shape": node.shape})
 
             for edge in st.session_state.grafo["edges"]:
-                grafo["graph"]["edges"].append({"source": edge.source, "label": edge.label})
+                grafo["graph"]["edges"].append({"source": edge.source,"to": edge.to,"label": int(edge.label)})
 
             # Guardar el grafo en formato JSON    
             with open("grafo.json", "w") as f:
@@ -80,10 +80,10 @@ class ArchivoApp:
         if st.session_state.grafo["nodes"] is not None:
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
+            nombre_archivo = st.sidebar.text_input("Nombre del archivo sin extension: ")
+            st.sidebar.write("Click en el boton 'Guardar como' al ingresar el nombre del archivo.")
             
         if st.sidebar.button("Guardar Como"):
-                nombre_archivo = st.sidebar.text_input("Nombre del archivo sin extension: ")
-                st.sidebar.write("Click en el boton 'Guardar como' al ingresar el nombre del archivo.")
                 if nombre_archivo != "":
                     grafo = {
                     "graph": {
@@ -96,7 +96,7 @@ class ArchivoApp:
                                                         "color": node.color, "shape": node.shape})
 
                     for edge in st.session_state.grafo["edges"]:
-                        grafo["graph"]["edges"].append({"source": edge.source, "label": edge.label})
+                        grafo["graph"]["edges"].append({"source": edge.source,"to": edge.to,"label": int(edge.label)})
                     
                     # Guardar el grafo en formato JSON    
                     with open(nombre_archivo + ".json", "w") as f:
@@ -120,7 +120,7 @@ class ArchivoApp:
         ponderado = st.sidebar.checkbox("Ponderado")
 
         # Peso para todas las aristas (si el grafo es ponderado)
-        peso_aristas = 1
+        peso_aristas = 0
         if ponderado:
             peso_aristas = st.sidebar.number_input("Peso de todas las aristas:", min_value=1, value=1)
 
@@ -254,14 +254,9 @@ class ArchivoApp:
             nodos = st.session_state.grafo["nodes"]
             aristas = st.session_state.grafo["edges"]
 
-            for nodo in aristas:
-                print("source:", nodo.source)
-                print("Label:", nodo.label)
-                print()  # Agrega una línea en blanco entre cada nodo
-
             # Crear una lista de diccionarios con los atributos de cada nodo
             datos_nodos = [{"id": nodo.id, "label": nodo.label, "color": nodo.color, "shape": nodo.shape} for nodo in nodos]
-            datos_aristas = [{"source": arista.source, "label": arista.label} for arista in aristas]
+            datos_aristas = [{"source": arista.source,"target":arista.to, "label": arista.label} for arista in aristas]
             
             # Crear DataFrame
             df_nodos = pd.DataFrame(datos_nodos)

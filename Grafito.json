@@ -1,0 +1,75 @@
+{
+   "graph": {
+      "nodes": [
+         {
+            "id": 1,
+            "size": 25,
+            "label": "N1",
+            "color": "#3498db",
+            "shape": "circle"
+         },
+         {
+            "id": 2,
+            "size": 25,
+            "label": "N2",
+            "color": "#3498db",
+            "shape": "circle"
+         },
+         {
+            "id": 3,
+            "size": 25,
+            "label": "N3",
+            "color": "#3498db",
+            "shape": "circle"
+         },
+         {
+            "id": 4,
+            "size": 25,
+            "label": "N4",
+            "color": "#3498db",
+            "shape": "circle"
+         },
+         {
+            "id": 5,
+            "size": 25,
+            "label": "N5",
+            "color": "#3498db",
+            "shape": "circle"
+         }
+      ],
+      "edges": [
+         {
+            "source": 1,
+            "label": "1"
+         },
+         {
+            "source": 2,
+            "label": "1"
+         },
+         {
+            "source": 2,
+            "label": "1"
+         },
+         {
+            "source": 3,
+            "label": "1"
+         },
+         {
+            "source": 3,
+            "label": "1"
+         },
+         {
+            "source": 4,
+            "label": "1"
+         },
+         {
+            "source": 4,
+            "label": "1"
+         },
+         {
+            "source": 5,
+            "label": "1"
+         }
+      ]
+   }
+}

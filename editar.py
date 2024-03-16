@@ -34,6 +34,9 @@ class EditarApp:
 
 
     def agregar_nodo(self):
+        if st.session_state.grafo["nodes"] is None:
+            st.header("No existe un grafo para agregar nodos. Debe crear un grafo primero.")
+            return
         nodos_actuales = []
         cantidad_nodos = st.sidebar.number_input("Cantidad de nodos:", min_value=1, value=1)
         color_nodos = st.sidebar.color_picker("Color de los nodos", value="#3498db")
@@ -51,7 +54,6 @@ class EditarApp:
                                            type=" ", data={},color=color_nodos, shape="circle"))
                 
             config = Config(width=600, height=300, directed=False, physics=True, hierarchical=False)
-                
             st.session_state.grafo["nodes"] = nodos_actuales
             
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
@@ -149,8 +151,10 @@ class EditarApp:
             # Actualizar el grafo en el estado de la sesión
             st.session_state.grafo["edges"] = edges
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"], st.session_state.grafo["config"])
+            st.rerun()
     
     def editar_arco(self):
+        print([edge.to_dict() for edge in st.session_state.grafo["edges"]])
         edges = st.session_state.grafo["edges"]
         # Verificar si edges es None
         if edges is None:
@@ -189,6 +193,7 @@ class EditarApp:
                 return
 
         if st.sidebar.button("Guardar cambios"):
+            st.sidebar.write("Cambio exitoso")
             edges.pop(index_edge_seleccionado)
             
             edges.append(Edge(source=nuevo_source_id, 
