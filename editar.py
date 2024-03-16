@@ -149,7 +149,8 @@ class EditarApp:
     
     def editar_arco(self):
         edges = st.session_state.grafo["edges"]
-        if not edges:
+        # Verificar si edges es None
+        if edges is None:
             st.sidebar.warning("No hay arcos en el grafo para editar.")
             return
 
@@ -164,8 +165,9 @@ class EditarApp:
 
         edge_seleccionado = None
         for edge in edges:
-            if edge.source == source_id and edge.target == target_id:
+            if edge.source == source_id and edge.to == target_id:
                 edge_seleccionado = edge
+                index_edge_seleccionado = edges.index(edge_seleccionado)
                 break
 
         if edge_seleccionado is None:
@@ -175,30 +177,24 @@ class EditarApp:
         # Campos de entrada para editar el arco seleccionado
         nuevo_source_id = st.sidebar.selectbox("Nuevo nodo de origen:", options=ids_nodos)
         nuevo_target_id = st.sidebar.selectbox("Nuevo nodo de destino:", options=ids_nodos)
-        nuevo_peso = st.sidebar.number_input("Nuevo peso:", min_value=1, value=edge_seleccionado.label)
-
-        # Verificar si los nuevos nodos de origen y destino existen en el grafo
-        if nuevo_source_id not in ids_nodos or nuevo_target_id not in ids_nodos:
-            st.sidebar.warning("Uno o ambos de los nodos seleccionados no existen en el grafo.")
-            return
+        nuevo_peso = st.sidebar.number_input("Nuevo peso:", min_value=1, value=int(edge_seleccionado.label))
 
         # Verificar si ya existe una arista entre los nuevos nodos de origen y destino
         for edge in edges:
-            if (edge.source == nuevo_source_id and edge.target == nuevo_target_id) or \
-            (edge.source == nuevo_target_id and edge.target == nuevo_source_id):
+            if (edge.source == nuevo_source_id and edge.to == nuevo_target_id):
                 st.sidebar.warning("Ya existe una arista entre los nuevos nodos de origen y destino.")
                 return
 
         if st.sidebar.button("Guardar cambios"):
-            # Actualizar el arco seleccionado con los nuevos valores
-            edge_seleccionado.source = nuevo_source_id
-            edge_seleccionado.target = nuevo_target_id
-            edge_seleccionado.label = nuevo_peso
+            edges.pop(index_edge_seleccionado)
+            
+            edges.append(Edge(source=nuevo_source_id, 
+                              target=nuevo_target_id, label=str(nuevo_peso)))  # Agregamos la nueva arista
 
             # Actualizar el grafo en session_state
             st.session_state.grafo["edges"] = edges
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"], st.session_state.grafo["config"])
-
+            st.rerun()
     
     def eliminar_arco(self):
         pass
