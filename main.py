@@ -2,6 +2,7 @@ import streamlit as st
 from archivo import ArchivoApp
 from editar import EditarApp
 from ventana import VentanaApp
+from ayuda import AyudaApp
 
 
 class GraphApp:
@@ -35,7 +36,8 @@ class GraphApp:
             ventana_app = VentanaApp()
             ventana_app.menu()
         elif seleccion == "Ayuda":
-            self.ayuda() 
+            ayuda_app = AyudaApp()
+            ayuda_app.menu() 
 
     def ejecutar(self):
         st.header("Página de ejecutar")
