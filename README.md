@@ -1,6 +1,8 @@
 # Nombre del Proyecto
 
 Proyecto de algoritmos - Parte 1 - Grafos
+Juan Esteban Meza Buitrago - 17808
+Mateo Galvis Casilima - 14642
 
 ## Instalación
 
