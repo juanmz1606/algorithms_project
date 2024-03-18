@@ -3,6 +3,7 @@ from archivo import ArchivoApp
 from editar import EditarApp
 from ventana import VentanaApp
 from ayuda import AyudaApp
+from ejecutar import EjecutarApp
 
 
 class GraphApp:
@@ -29,7 +30,8 @@ class GraphApp:
             editar_app = EditarApp()
             editar_app.menu()
         elif seleccion == "Ejecutar":
-            self.ejecutar()
+            ejecutar_app = EjecutarApp()
+            ejecutar_app.menu()
         elif seleccion == "Herramientas":
             self.herramientas()
         elif seleccion == "Ventana":
@@ -48,16 +50,6 @@ class GraphApp:
         st.header("Página de herramientas")
         submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
                                               ["....Coming soon"])
-                
-    def ventana(self):
-        st.header("Página de ventana")
-        submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
-                                              ["Grafica", "Tabla"])
-                
-    def ayuda(self):
-        st.header("Página de ayuda")
-        submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
-                                              ["Ayuda", "Acerca de grafos"])
                 
 # Crear una instancia de la clase GraphApp
 app = GraphApp()
