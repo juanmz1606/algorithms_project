@@ -13,6 +13,9 @@ class GraphApp:
     def initialize_session_state(self):
         if 'grafo' not in st.session_state:
             st.session_state.grafo = {"nodes": None, "edges": None, "config": None}
+            
+        if 'directed' not in st.session_state:
+            st.session_state.directed = False
 
     def menu_principal(self):
         # Restaurar o inicializar el estado de la sesión

@@ -181,13 +181,14 @@ class ArchivoApp:
         # Peso para todas las aristas (si el grafo es ponderado)
         peso_aristas = 0
         if ponderado:
-            peso_aristas = st.sidebar.number_input("Peso de todas las aristas:", min_value=1, value=1)
+            peso_aristas = st.sidebar.number_input("Peso de todas las aristas:", min_value=0, value=0)
 
         dirigido = st.sidebar.checkbox("Dirigido")
 
         # Color para todos los nodos
         color_nodos = st.sidebar.color_picker("Color de todos los nodos", value="#3498db")
         config = Config(width=600, height=450, directed=dirigido, physics=True, hierarchical=False)
+        st.session_state.directed = dirigido
         
         # Crear grafo personalizado al hacer clic en el botón
         if st.sidebar.button("Crear Grafo"):
@@ -245,6 +246,7 @@ class ArchivoApp:
         color_nodos = st.sidebar.color_picker("Color de todos los nodos", value="#3498db")
 
         config = Config(width=600, height=450, directed=dirigido, physics=True, hierarchical=False)
+        st.session_state.directed = dirigido
         
         # Crear grafo aleatorio al hacer clic en el botón
         if st.sidebar.button("Crear Grafo"):
@@ -301,6 +303,7 @@ class ArchivoApp:
                                               target=edge["nodeId"], color="#000000"))
 
                 config = Config(width=600, height=450, directed=False, physics=True, hierarchical=False)
+                st.session_state.directed = False
                 
                 st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
                 agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
@@ -338,6 +341,7 @@ class ArchivoApp:
                                               target=edge["nodeId"], color="#000000"))
 
                 config = Config(width=600, height=450, directed=False, physics=True, hierarchical=False)
+                st.session_state.directed = False
                 
                 st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
                 agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],

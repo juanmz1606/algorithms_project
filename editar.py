@@ -149,8 +149,22 @@ class EditarApp:
         target_id = st.sidebar.selectbox("Seleccionar nodo de destino:", [node.id for node in nodos_actuales if node.id != source_id], key=111)
         
         if st.sidebar.button("Agregar Arista"):
+            for edge in edges:
+                if (edge.source == source_id and edge.to == target_id):
+                    st.sidebar.warning("Ya existe una arista entre los nuevos nodos de origen y destino.")
+                    return
+                if not st.session_state.directed:
+                    if (edge.to == source_id and edge.source == target_id):
+                        st.sidebar.warning("Ya existe una arista entre los nuevos nodos de " +
+                                           "origen y destino.")
+                        return
             edges.append(Edge(source=int(source_id), target=int(target_id), 
                               label=peso_arista, color=color_arista, dashes=punteada))
+
+            if not st.session_state.directed:  # Si el grafo no es dirigido, agregamos la arista en la dirección opuesta
+                edges.append(Edge(source=int(target_id), target=int(source_id), 
+                              label=peso_arista, color=color_arista, dashes=punteada))
+            
             # Actualizar el grafo en el estado de la sesión
             st.session_state.grafo["edges"] = edges
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"], 
@@ -174,12 +188,13 @@ class EditarApp:
         target_id = st.sidebar.selectbox("Seleccionar nodo de destino:", options=ids_nodos)
 
         edge_seleccionado = None
+        edge_seleccionado_nodirected = None
         for edge in edges:
             if edge.source == source_id and edge.to == target_id:
                 edge_seleccionado = edge
                 index_edge_seleccionado = edges.index(edge_seleccionado)
                 break
-
+            
         if edge_seleccionado is None:
             st.sidebar.warning("No se encontró el arco seleccionado en el grafo.")
             return
@@ -190,19 +205,30 @@ class EditarApp:
         nuevo_peso = st.sidebar.number_input("Nuevo peso:", min_value=0, value=int(edge_seleccionado.label))
         color_arista = st.sidebar.color_picker("Color de la nueva arista", value="#000000")
         punteada = st.sidebar.checkbox("Arista punteada", value=False)
+        
+        
+        if st.sidebar.button("Guardar cambios"):      
+            # Verificar si ya existe una arista entre los nuevos nodos de origen y destino
+            for edge in edges:
+                if (edge.source == nuevo_source_id and edge.to == nuevo_target_id):
+                    st.sidebar.warning("Ya existe una arista entre los nuevos nodos de origen y destino.")
+                    return
+                if not st.session_state.directed:
+                    if (edge.to == nuevo_source_id and edge.source == nuevo_target_id):
+                        st.sidebar.warning("Ya existe una arista entre los nuevos nodos de origen y destino.")
+                        return
+                if edge.source == edge_seleccionado.to and edge.to == edge_seleccionado.source:
+                    edge_seleccionado_nodirected = edge
+                    index_edge_seleccionado_nodirected = edges.index(edge_seleccionado_nodirected)
 
-        # Verificar si ya existe una arista entre los nuevos nodos de origen y destino
-        for edge in edges:
-            if (edge.source == nuevo_source_id and edge.to == nuevo_target_id):
-                st.sidebar.warning("Ya existe una arista entre los nuevos nodos de origen y destino.")
-                return
-
-        if st.sidebar.button("Guardar cambios"):
             st.sidebar.write("Cambio exitoso")
             edges.pop(index_edge_seleccionado)
             
-            edges.append(Edge(source=nuevo_source_id, 
-                              target=nuevo_target_id, label=nuevo_peso, color=color_arista,dashes = punteada))  # Agregamos la nueva arista
+            edges.append(Edge(source=nuevo_source_id, target=nuevo_target_id, label=nuevo_peso, color=color_arista,dashes=punteada))  # Agregamos la nueva arista
+
+            if not st.session_state.directed:
+                edges.pop(index_edge_seleccionado_nodirected)
+                edges.append(Edge(source=nuevo_target_id, target=nuevo_source_id, label=nuevo_peso, color=color_arista,dashes=punteada))
 
             # Actualizar el grafo en session_state
             st.session_state.grafo["edges"] = edges
