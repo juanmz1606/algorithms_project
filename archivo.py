@@ -346,10 +346,9 @@ class ArchivoApp:
                 st.session_state.grafo = {"nodes": nodes, "edges": edges, "config": config}
                 agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
-                st.rerun()
-                
             except json.JSONDecodeError:
                 st.error("Error al decodificar el archivo JSON. Asegúrate de que el archivo tenga un formato JSON válido.")
+        
             
     def exportar_datos(self):
         if st.session_state.grafo["nodes"] is not None:

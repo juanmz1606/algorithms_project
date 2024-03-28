@@ -1,0 +1,71 @@
+{
+    "graph": [
+      {
+        "name": "G",
+        "data": [
+          {
+            "id": 1,
+            "label": "N1",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+              {
+                "nodeId": 3,
+                "weight": 1
+              }
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "id": 2,
+            "label": "N2",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+              {
+                "nodeId": 4,
+                "weight": 1
+              }
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "id": 3,
+            "label": "N3",
+            "data": {},
+            "type": " ",
+            "linkedTo": [],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "id": 4,
+            "label": "N4",
+            "data": {},
+            "type": " ",
+            "linkedTo": [],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        ]
+      }
+    ],
+    "generalData1": 100,
+    "generalData2": "Alg",
+    "generalData3": 300
+  }
+  
