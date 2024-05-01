@@ -1,5 +1,7 @@
 import streamlit as st
 from streamlit_agraph import agraph, Node, Edge, Config
+from itertools import combinations
+import random
 
 class EjecutarApp:
     def __init__(self):
@@ -7,11 +9,13 @@ class EjecutarApp:
 
     def menu(self):
         submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
-                                              ["Bipartito", "Componentes conexas", "Más Procesos"])
+                                              ["Bipartito", "Componentes conexas", "Parcial 1.1"])
         if submenu_opcion == "Bipartito":
             self.bipartito()
         if submenu_opcion == "Componentes conexas":
             self.mostrarComponentes()
+        if submenu_opcion == "Parcial 1.1":
+            self.generar_combinaciones_subgrafos()
                         
     def bipartito(self):
         if st.session_state.grafo["nodes"] is None:
