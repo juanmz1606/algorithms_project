@@ -11,6 +11,7 @@ import time
 import pandas as pd
 import random
 
+
 class ArchivoApp:
     def __init__(self):
         pass

@@ -1,5 +1,6 @@
 import streamlit as st
 from streamlit_agraph import agraph, Node, Edge, Config
+import copy
 
 class EditarApp:
     def __init__(self):
@@ -16,8 +17,13 @@ class EditarApp:
             self.arco()
             
     def deshacer(self):
-        st.warning("La opción de deshacer aún no está implementada.")
-        
+        if st.sidebar.button("Deshacer último cambio"):
+            if st.session_state.get("previous_grafo", {"nodes": None, "edges": None, "config": None})["nodes"] is None:
+                st.sidebar.warning("No se ha realizado ningún cambio al grafo actual")
+                return
+            st.session_state.grafo = st.session_state.previous_grafo
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"], st.session_state.grafo["config"])
+            
     def nodo(self):
         if st.session_state.grafo["nodes"] is not None:
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
@@ -41,22 +47,18 @@ class EditarApp:
         cantidad_nodos = st.sidebar.number_input("Cantidad de nodos:", min_value=1, value=1)
         color_nodos = st.sidebar.color_picker("Color de los nodos", value="#3498db")
         max_id = 0
-
         if st.sidebar.button("Agregar Nodo"):
+            # Guardar el estado actual del grafo en previous_grafo
+            st.session_state.previous_grafo = copy.deepcopy(st.session_state.grafo)
+
             if st.session_state.grafo["nodes"] is not None:
                 nodos_actuales = st.session_state.grafo["nodes"]
-                # Encontrar el máximo identificador actual
                 max_id = max([node.id for node in nodos_actuales])
-      
             for i in range(cantidad_nodos):
-                new_id = max_id + i + 1  # Asignar un identificador único
-                nodos_actuales.append(Node(id=new_id, size=float(25), label=f"N{new_id}", 
-                                           type=" ", data={},color=color_nodos, shape="circle"))
-                
+                new_id = max_id + i + 1
+                nodos_actuales.append(Node(id=new_id, size=float(25), label=f"N{new_id}", type=" ", data={}, color=color_nodos, shape="circle"))
             st.session_state.grafo["nodes"] = nodos_actuales
-            
-            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
-                        st.session_state.grafo["config"])
+            agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"], st.session_state.grafo["config"])
             st.rerun()
             
     def editar_nodo(self):
@@ -82,12 +84,14 @@ class EditarApp:
             nuevo_tamaño = st.sidebar.number_input("Nuevo tamaño:", min_value=0.1, value=nodo_seleccionado.size)
             
             if st.sidebar.button("Guardar cambios"):
+                # Guardar el estado actual del grafo en previous_grafo
+                st.session_state.previous_grafo = copy.deepcopy(st.session_state.grafo)
+                
                 # Actualizar el nodo seleccionado con los nuevos valores
                 nodo_seleccionado.color = nuevo_color
                 nodo_seleccionado.label = nueva_etiqueta
                 nodo_seleccionado.size = nuevo_tamaño
                 
-                # Actualizar el grafo en session_state
                 st.session_state.grafo["nodes"] = nodos_actuales
                 agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
                         st.session_state.grafo["config"])
@@ -108,6 +112,8 @@ class EditarApp:
         nodo_a_eliminar= st.sidebar.selectbox("Seleccionar ID del nodo:", options=ids_nodos)
 
         if st.sidebar.button("Eliminar Nodo"):
+            # Guardar el estado actual del grafo en previous_grafo
+            st.session_state.previous_grafo = copy.deepcopy(st.session_state.grafo)
             # Filtrar los nodos actuales para eliminar el nodo seleccionado
             nodos_actuales = [node for node in nodos_actuales if node.id != nodo_a_eliminar]
             
@@ -149,6 +155,9 @@ class EditarApp:
         target_id = st.sidebar.selectbox("Seleccionar nodo de destino:", [node.id for node in nodos_actuales if node.id != source_id], key=111)
         
         if st.sidebar.button("Agregar Arista"):
+            # Guardar el estado actual del grafo en previous_grafo
+            st.session_state.previous_grafo = copy.deepcopy(st.session_state.grafo)
+            
             for edge in edges:
                 if (edge.source == source_id and edge.to == target_id):
                     st.sidebar.warning("Ya existe una arista entre los nuevos nodos de origen y destino.")
@@ -179,22 +188,20 @@ class EditarApp:
             return
 
         nodos_actuales = st.session_state.grafo["nodes"]
-
         # Obtener los IDs de los nodos del grafo
         ids_nodos = [node.id for node in nodos_actuales]
-
         # Crear una lista de selección con los IDs de los nodos
         source_id = st.sidebar.selectbox("Seleccionar nodo de origen:", options=ids_nodos)
         target_id = st.sidebar.selectbox("Seleccionar nodo de destino:", options=ids_nodos)
-
         edge_seleccionado = None
         edge_seleccionado_nodirected = None
+
         for edge in edges:
             if edge.source == source_id and edge.to == target_id:
                 edge_seleccionado = edge
                 index_edge_seleccionado = edges.index(edge_seleccionado)
                 break
-            
+
         if edge_seleccionado is None:
             st.sidebar.warning("No se encontró el arco seleccionado en el grafo.")
             return
@@ -205,9 +212,11 @@ class EditarApp:
         nuevo_peso = st.sidebar.number_input("Nuevo peso:", min_value=0, value=int(edge_seleccionado.label))
         color_arista = st.sidebar.color_picker("Color de la nueva arista", value="#000000")
         punteada = st.sidebar.checkbox("Arista punteada", value=False)
-        
-        
-        if st.sidebar.button("Guardar cambios"):      
+
+        if st.sidebar.button("Guardar cambios"):
+            # Guardar el estado actual del grafo en previous_grafo
+            st.session_state.previous_grafo = copy.deepcopy(st.session_state.grafo)
+
             # Verificar si ya existe una arista entre los nuevos nodos de origen y destino
             for edge in edges:
                 if (edge.source == nuevo_source_id and edge.to == nuevo_target_id):
@@ -217,18 +226,23 @@ class EditarApp:
                     if (edge.to == nuevo_source_id and edge.source == nuevo_target_id):
                         st.sidebar.warning("Ya existe una arista entre los nuevos nodos de origen y destino.")
                         return
-                if edge.source == edge_seleccionado.to and edge.to == edge_seleccionado.source:
-                    edge_seleccionado_nodirected = edge
-                    index_edge_seleccionado_nodirected = edges.index(edge_seleccionado_nodirected)
+
+            index_edge_seleccionado_nodirected = None
+            if not st.session_state.directed:
+                for edge in edges:
+                    if edge.source == edge_seleccionado.to and edge.to == edge_seleccionado.source:
+                        edge_seleccionado_nodirected = edge
+                        index_edge_seleccionado_nodirected = edges.index(edge_seleccionado_nodirected)
+                        break
 
             st.sidebar.write("Cambio exitoso")
             edges.pop(index_edge_seleccionado)
-            
-            edges.append(Edge(source=nuevo_source_id, target=nuevo_target_id, label=nuevo_peso, color=color_arista,dashes=punteada))  # Agregamos la nueva arista
+            edges.append(Edge(source=nuevo_source_id, target=nuevo_target_id, label=nuevo_peso, color=color_arista, dashes=punteada))
 
-            if not st.session_state.directed:
+            # Agregamos la nueva arista si no es un grafo dirigido
+            if not st.session_state.directed and index_edge_seleccionado_nodirected is not None:
                 edges.pop(index_edge_seleccionado_nodirected)
-                edges.append(Edge(source=nuevo_target_id, target=nuevo_source_id, label=nuevo_peso, color=color_arista,dashes=punteada))
+                edges.append(Edge(source=nuevo_target_id, target=nuevo_source_id, label=nuevo_peso, color=color_arista, dashes=punteada))
 
             # Actualizar el grafo en session_state
             st.session_state.grafo["edges"] = edges
@@ -261,6 +275,8 @@ class EditarApp:
             return
         
         if st.sidebar.button("Eliminar arco"):
+            # Guardar el estado actual del grafo en previous_grafo
+            st.session_state.previous_grafo = copy.deepcopy(st.session_state.grafo)
             edges.remove(edge_seleccionado)
             st.session_state.grafo["edges"] = edges
             agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"], st.session_state.grafo["config"])
