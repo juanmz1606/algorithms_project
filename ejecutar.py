@@ -174,3 +174,71 @@ class EjecutarApp:
 
         # Imprimir la tablaF resultante
         print("tablaF3 =", tablaF)
+        
+        
+    def generar_combinaciones_subgrafos(self):
+        if st.session_state.grafo["nodes"] is None:
+            st.sidebar.warning("No se tiene un grafo en la aplicación.")
+            return
+
+        nodes = st.session_state.grafo["nodes"]
+        edges = st.session_state.grafo["edges"]
+
+        # Mapear los identificadores de los nodos a sus labels
+        node_labels = {node.id: node.label for node in nodes}
+
+        # Generar todas las combinaciones posibles de nodos
+        combinaciones = []
+        for r in range(1, len(nodes) // 2 + 1):
+            for subgrafo_nodos in combinations(nodes, r):
+                subgrafo_nodos_set = set(node.id for node in subgrafo_nodos)
+                otros_nodos_set = {node.id for node in nodes} - subgrafo_nodos_set
+
+                subgrafo_aristas = [(edge.source, edge.to, edge.label) for edge in edges if edge.source in subgrafo_nodos_set and edge.to in subgrafo_nodos_set]
+                otros_nodos_aristas = [(edge.source, edge.to, edge.label) for edge in edges if edge.source in otros_nodos_set and edge.to in otros_nodos_set]
+                aristas_restantes = [(edge.source, edge.to, edge.label) for edge in edges if edge.source not in subgrafo_nodos_set and edge.to not in subgrafo_nodos_set]
+
+                combinaciones.append((subgrafo_nodos_set, subgrafo_aristas, otros_nodos_set, otros_nodos_aristas, aristas_restantes))
+
+        # Mostrar las combinaciones
+        combinaciones_finales = []
+        combinaciones_vistas = set()  # Para almacenar los subgrafos ya vistos
+        for combinacion in combinaciones:
+            subgrafo_1 = combinacion[0]
+            subgrafo_2 = combinacion[2]
+
+            # Convertir los subgrafos a listas ordenadas para comparación
+            subgrafo_1_sorted = tuple(sorted(subgrafo_1))
+            subgrafo_2_sorted = tuple(sorted(subgrafo_2))
+
+            # Si alguno de los subgrafos ya ha sido visto, continuar con la siguiente iteración
+            if subgrafo_1_sorted in combinaciones_vistas or subgrafo_2_sorted in combinaciones_vistas:
+                continue
+            
+            # Verificar que tanto las aristas del primer subgrafo como las del segundo subgrafo no estén vacías
+            if not combinacion[1] and not combinacion[3]:
+                continue
+
+            # Si no ha sido vista, agregarla al conjunto de subgrafos vistos y a la lista de combinaciones finales
+            combinaciones_vistas.add(subgrafo_1_sorted)
+            combinaciones_vistas.add(subgrafo_2_sorted)
+            combinaciones_finales.append(combinacion)
+
+        # Mostrar la lista de combinaciones finales
+        for i, combinacion in enumerate(combinaciones_finales, 1):
+            subgrafo_1 = combinacion[0]
+            subgrafo_2 = combinacion[2]
+
+            st.write(f"Combinación {i}:")
+            st.write(f"Subgrafo 1:")
+            st.write("Nodos:")
+            for nodo_id in subgrafo_1:
+                st.write(f"{node_labels[nodo_id]}")  # Imprimir el label del nodo
+            st.write(f"Aristas: {combinacion[1]}")
+            st.write(f"Subgrafo 2:")
+            st.write("Nodos:")
+            for nodo_id in subgrafo_2:
+                st.write(f"{node_labels[nodo_id]}")  # Imprimir el label del nodo
+            st.write(f"Aristas: {combinacion[3]}")
+            
+            st.write("------------------------------------------------")
