@@ -9,13 +9,15 @@ class EjecutarApp:
 
     def menu(self):
         submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
-                                              ["Bipartito", "Componentes conexas", "Parcial 1.1"])
+                                              ["Bipartito", "Componentes conexas", "Parcial 1.1","Estrategia 1"])
         if submenu_opcion == "Bipartito":
             self.bipartito()
         if submenu_opcion == "Componentes conexas":
             self.mostrarComponentes()
         if submenu_opcion == "Parcial 1.1":
             self.generar_combinaciones_subgrafos()
+        if submenu_opcion == "Estrategia 1":    
+            self.estrategia1()
                         
     def bipartito(self):
         if st.session_state.grafo["nodes"] is None:
@@ -117,3 +119,58 @@ class EjecutarApp:
                                 # Si se encuentra un conflicto de color, el grafo no es bipartito
                                 return False
         return True
+    
+    def estrategia1(self):
+        tablaA = [
+            [(0, 0, 0), 1, 0],
+            [(1, 0, 0), 1, 0],
+            [(0, 1, 0), 0, 1],
+            [(1, 1, 0), 0, 1],
+            [(0, 0, 1), 0, 1],
+            [(1, 0, 1), 0, 1],
+            [(0, 1, 1), 0, 1],
+            [(1, 1, 1), 0, 1]
+        ]
+
+        tablaB = [
+            [(0, 0, 0), 1, 0],
+            [(1, 0, 0), 1, 0],
+            [(0, 1, 0), 1, 0],
+            [(1, 1, 0), 1, 0],
+            [(0, 0, 1), 1, 0],
+            [(1, 0, 1), 0, 1],
+            [(0, 1, 1), 1, 0],
+            [(1, 1, 1), 0, 1]
+        ]
+
+        tablaC = [
+            [(0, 0, 0), 1, 0],
+            [(1, 0, 0), 0, 1],
+            [(0, 1, 0), 0, 1],
+            [(1, 1, 0), 1, 0],
+            [(0, 0, 1), 1, 0],
+            [(1, 0, 1), 0, 1],
+            [(0, 1, 1), 0, 1],
+            [(1, 1, 1), 1, 0]
+        ]
+
+       # Combinar las tablas en una sola tablaF
+        tablaF = []
+
+       # Iterar sobre cada estado único (x, y, z) en las tablas
+        for entryA, entryB, entryC in zip(tablaA, tablaB, tablaC):
+            estado, valA, valB, valC = entryA[0], entryA[1:], entryB[1:], entryC[1:]
+            
+            # Verificar que los estados coincidan
+            assert estado == entryB[0] == entryC[0]
+            
+            # Calcular los resultados para cada tabla
+            resultA = 0.0 if (valA[0], valA[1]) == (1, 0) else 1.0
+            resultB = 0.0 if (valB[0], valB[1]) == (1, 0) else 1.0
+            resultC = 0.0 if (valC[0], valC[1]) == (1, 0) else 1.0
+            
+            # Agregar la entrada a tablaF con los resultados correspondientes
+            tablaF.append([estado, resultA, resultB, resultC])
+
+        # Imprimir la tablaF resultante
+        print("tablaF3 =", tablaF)
