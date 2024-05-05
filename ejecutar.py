@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit_agraph import agraph, Node, Edge, Config
 from itertools import combinations
-import random
+import numpy as np
 
 class EjecutarApp:
     def __init__(self):
@@ -183,7 +183,7 @@ class EjecutarApp:
             tablaF.append([estado, resultA, resultB, resultC])
 
         # Imprimir la tablaF resultante
-        print("tablaF3 =", tablaF)
+        #print("tablaF3 =", tablaF)
         
         
     def generar_combinaciones_subgrafos(self):
@@ -276,8 +276,11 @@ class EjecutarApp:
         for tabla_name in futuro:
             tabla_marg.append(self.marginalizar(tabla_name, presente, estadoInicial))
         
+        # Mostrar las listas en tabla_marg
+        for i, lista in enumerate(tabla_marg):
+            st.write(f"Lista {i + 1}: {lista}")
+
         #Producto tensor entre cada posicion de la tabla_marg
-        
         
     def marginalizar(self, tabla_name, presente, estadoInicial):
         tabla_original = st.session_state.tablas_prob[tabla_name]
@@ -314,6 +317,8 @@ class EjecutarApp:
             resultado2 = suma_ultimos_valores / 2
             st.write(f"Marginalizacion {presente} ({tupla1[0]}, {tupla1[2]}) {tabla_name}: ({resultado1}, {resultado2})")
             st.write("------------------------------------------------")
+
+        return resultado1, resultado2
 
 
         
