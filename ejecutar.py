@@ -9,7 +9,9 @@ class EjecutarApp:
 
     def menu(self):
         submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
-                                              ["Bipartito", "Componentes conexas", "Parcial 1.1","Estrategia 1"])
+                                              ["Bipartito", "Componentes conexas", 
+                                               "Parcial 1.1","Estrategia 1",
+                                               "Marginalizar"])
         if submenu_opcion == "Bipartito":
             self.bipartito()
         if submenu_opcion == "Componentes conexas":
@@ -18,6 +20,8 @@ class EjecutarApp:
             self.generar_combinaciones_subgrafos()
         if submenu_opcion == "Estrategia 1":    
             self.estrategia1()
+        if submenu_opcion == "Marginalizar":    
+            self.prueba()
                         
     def bipartito(self):
         if st.session_state.grafo["nodes"] is None:
@@ -131,6 +135,8 @@ class EjecutarApp:
             [(0, 1, 1), 0, 1],
             [(1, 1, 1), 0, 1]
         ]
+        
+        st.session_state.tablas_prob["A'"] = tablaA
 
         tablaB = [
             [(0, 0, 0), 1, 0],
@@ -142,6 +148,8 @@ class EjecutarApp:
             [(0, 1, 1), 1, 0],
             [(1, 1, 1), 0, 1]
         ]
+        
+        st.session_state.tablas_prob["B'"] = tablaB
 
         tablaC = [
             [(0, 0, 0), 1, 0],
@@ -153,6 +161,8 @@ class EjecutarApp:
             [(0, 1, 1), 0, 1],
             [(1, 1, 1), 1, 0]
         ]
+        
+        st.session_state.tablas_prob["C'"] = tablaC
 
        # Combinar las tablas en una sola tablaF
         tablaF = []
@@ -242,3 +252,51 @@ class EjecutarApp:
             st.write(f"Aristas: {combinacion[3]}")
             
             st.write("------------------------------------------------")
+            
+    def prueba(self):
+        estados = [1,1]
+        presente = "AC"
+        variables = ""
+        destinos = []
+        
+        for edge in st.session_state.grafo["edges"]:
+            destinos.append(edge.to)
+            
+        for node in st.session_state.grafo["nodes"]:
+            if node.id not in destinos:
+                variables += node.label
+        
+        futuro = ["A'", "B'", "C'"]
+        
+        estadoInicial = {var: (estados.pop(0) if var in presente else None) for var in variables}
+        
+        tabla_marg = []
+        
+        #for tabla_name in futuro:
+        tabla_marg.append(self.marginalizar(futuro[0],presente,estadoInicial))
+            
+        #producto tensor entre cada posicion de la tabla_marg
+        
+        
+    def marginalizar(self, tabla_name, presente, estadoInicial):
+        tabla_original = st.session_state.tablas_prob[tabla_name]
+
+        # Obtaining the indices of the present variables
+        indices_presente = [ord(var) - ord('A') for var in presente]
+        
+        # Iterating over each row of the table
+        for fila in tabla_original:
+            # Checking if the values of the present variables satisfy the conditions
+            condicion_cumplida = True
+            for i in range(len(presente)):
+                if estadoInicial[presente[i]] is not None and fila[0][indices_presente[i]] != estadoInicial[presente[i]]:
+                    condicion_cumplida = False
+                    break
+            
+            if condicion_cumplida:
+                # If the conditions are met, print the row
+                st.write(f"Row where {presente} are all 0: {fila}")
+
+
+        
+        

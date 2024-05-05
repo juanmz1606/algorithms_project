@@ -19,6 +19,9 @@ class GraphApp:
             
         if 'previous_grafo' not in st.session_state:
             st.session_state.previous_grafo = {"nodes": None, "edges": None, "config": None}
+            
+        if 'tablas_prob' not in st.session_state:
+            st.session_state.tablas_prob = {}
 
     def menu_principal(self):
         # Restaurar o inicializar el estado de la sesión
