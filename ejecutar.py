@@ -254,7 +254,7 @@ class EjecutarApp:
             st.write("------------------------------------------------")
             
     def prueba(self):
-        estados = [1,1]
+        estados = [1,0]
         presente = "AC"
         variables = ""
         destinos = []
@@ -272,10 +272,11 @@ class EjecutarApp:
         
         tabla_marg = []
         
-        #for tabla_name in futuro:
-        tabla_marg.append(self.marginalizar(futuro[0],presente,estadoInicial))
-            
-        #producto tensor entre cada posicion de la tabla_marg
+        # Iterar sobre cada tabla_name en futuro y llamar a marginalizar
+        for tabla_name in futuro:
+            tabla_marg.append(self.marginalizar(tabla_name, presente, estadoInicial))
+        
+        #Producto tensor entre cada posicion de la tabla_marg
         
         
     def marginalizar(self, tabla_name, presente, estadoInicial):
@@ -283,6 +284,9 @@ class EjecutarApp:
 
         # Obtaining the indices of the present variables
         indices_presente = [ord(var) - ord('A') for var in presente]
+
+        suma_penultimos_valores = 0
+        suma_ultimos_valores = 0
         
         # Iterating over each row of the table
         for fila in tabla_original:
@@ -292,10 +296,24 @@ class EjecutarApp:
                 if estadoInicial[presente[i]] is not None and fila[0][indices_presente[i]] != estadoInicial[presente[i]]:
                     condicion_cumplida = False
                     break
-            
+       
             if condicion_cumplida:
-                # If the conditions are met, print the row
-                st.write(f"Row where {presente} are all 0: {fila}")
+                st.write(f"{presente}: {fila}")
+
+                tupla1 = fila[0]
+        
+                penultimo_valor = fila[1]
+                ultimo_valor = fila[2]
+
+                suma_penultimos_valores += penultimo_valor
+                suma_ultimos_valores += ultimo_valor
+
+        # Calcular los resultados finales promediando los valores sumados
+        if tabla_original:
+            resultado1 = suma_penultimos_valores / 2
+            resultado2 = suma_ultimos_valores / 2
+            st.write(f"Marginalizacion {presente} ({tupla1[0]}, {tupla1[2]}) {tabla_name}: ({resultado1}, {resultado2})")
+            st.write("------------------------------------------------")
 
 
         
