@@ -215,8 +215,15 @@ class EjecutarApp:
             for dato in json_data:
                 st.session_state.tablas_prob[dato["nombre"]] = dato["probabilidades"]
                 
+            #PARTIR DATOS FUTUROS Y PRESENTES DEL USUARIO
+            
+            
+            #ITERAR EN ESA PARTICION PARA AGREGARLA A LA LISTA DE MARGINALIZADOS
+                
             variables = ""
             destinos = []
+            tabla_marg = []
+            tensores = []
             
             for edge in st.session_state.grafo["edges"]:
                 destinos.append(edge.to)
@@ -227,15 +234,15 @@ class EjecutarApp:
             
             estadoInicial = {var: (estados.pop(0) if var in presente else None) for var in variables}
             
-            tabla_marg = []
-            tensores = []
+            if presente == '':
+                for tabla_name in futuro:
+                    tabla_marg.append(self.vacio(tabla_name))
             
-            tabla_marg.append(self.vacio("C'"))
-            
-            # Iterar sobre cada tabla_name en futuro y llamar a marginalizar
-            for tabla_name in futuro:
-                tabla_marg.append(self.marginalizar(tabla_name, presente, estadoInicial))
-                
+            else:
+                # Iterar sobre cada tabla_name en futuro y llamar a marginalizar
+                for tabla_name in futuro:
+                    tabla_marg.append(self.marginalizar(tabla_name, presente, estadoInicial))
+                    
             # Mostrar las listas en tabla_marg
             for i, lista in enumerate(tabla_marg):
                 st.write(f"Lista {i + 1}: {lista}")
@@ -246,11 +253,12 @@ class EjecutarApp:
                     producto_tensorial = tensor
                 else:
                     producto_tensorial = np.kron(producto_tensorial, tensor)
+     
             st.write(f"Producto Tensorial: {producto_tensorial}")
             tensores.append(producto_tensorial)
         
-    def vacio(self,futuroVacio):
-        tabla_original = st.session_state.tablas_prob[futuroVacio]
+    def vacio(self,presenteVacio):
+        tabla_original = st.session_state.tablas_prob[presenteVacio]
         sumaFilaCero = 0
         sumaFilaUno = 0
         tabla_vacio = []
