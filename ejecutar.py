@@ -279,8 +279,15 @@ class EjecutarApp:
         # Mostrar las listas en tabla_marg
         for i, lista in enumerate(tabla_marg):
             st.write(f"Lista {i + 1}: {lista}")
-
-        #Producto tensor entre cada posicion de la tabla_marg
+        
+        # Calcular el producto tensorial de Kronecker para cada tensor en la lista
+        for i, tensor in enumerate(tabla_marg):
+            if i == 0:
+                producto_tensorial = tensor
+            else:
+                producto_tensorial = np.kron(producto_tensorial, tensor)
+        st.write(f"Producto Tensorial: {producto_tensorial}")
+        
         
     def marginalizar(self, tabla_name, presente, estadoInicial):
         tabla_original = st.session_state.tablas_prob[tabla_name]
