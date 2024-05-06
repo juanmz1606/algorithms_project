@@ -11,13 +11,15 @@ class EjecutarApp:
     def menu(self):
         submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
                                               ["Bipartito", "Componentes conexas",
-                                              "Estrategia 1"])
+                                              "Estrategia 1", "Estrategia 2"])
         if submenu_opcion == "Bipartito":
             self.bipartito()
         if submenu_opcion == "Componentes conexas":
             self.mostrarComponentes()
         if submenu_opcion == "Estrategia 1":    
             self.estrategia1()
+        if submenu_opcion == "Estrategia 2":
+            self.crearGrafoEstados()
                         
     def bipartito(self):
         if st.session_state.grafo["nodes"] is None:
@@ -118,14 +120,41 @@ class EjecutarApp:
                                 # Si se encuentra un conflicto de color, el grafo no es bipartito
                                 return False
         return True
+    
+    def crearGrafoEstados(self):
+        presente = st.sidebar.text_input("Valores presentes")
+        futuro = st.sidebar.text_input("Valores futuros")
         
-    def generar_combinaciones_subgrafos(self):
+        # Separar los valores usando el caracter de comillas como delimitador
+        valores_futuros_lista = futuro.split("'")
+
+        # Eliminar elementos vacíos y espacios adicionales
+        valores_futuros_lista = [valor.strip() for valor in valores_futuros_lista if valor.strip()]
+
+        # Agregar comillas simples alrededor de cada letra
+        futuro = [f"{valor}'" for valor in valores_futuros_lista]
+        nodes = []
+        edges = []
+        i = 0
+        
+        for letra in presente:
+                nodes.append(Node(id=i+1,label=letra))
+                i += 1
+        for letra in futuro:
+                nodes.append(Node(id=i+1,label=letra))
+                i += 1
+                
+        if st.sidebar.button("click"): 
+            st.write(node.to_dict() for node in nodes)
+        
+        #combinaciones = self.generar_combinaciones_subgrafos(nodes,edges)
+        
+        
+        
+    def generar_combinaciones_subgrafos(self,nodes,edges):
         if st.session_state.grafo["nodes"] is None:
             st.sidebar.warning("No se tiene un grafo en la aplicación.")
             return
-
-        nodes = st.session_state.grafo["nodes"]
-        edges = st.session_state.grafo["edges"]
 
         # Mapear los identificadores de los nodos a sus labels
         node_labels = {node.id: node.label for node in nodes}
@@ -136,19 +165,18 @@ class EjecutarApp:
             for subgrafo_nodos in combinations(nodes, r):
                 subgrafo_nodos_set = set(node.id for node in subgrafo_nodos)
                 otros_nodos_set = {node.id for node in nodes} - subgrafo_nodos_set
-
                 subgrafo_aristas = [(edge.source, edge.to, edge.label) for edge in edges if edge.source in subgrafo_nodos_set and edge.to in subgrafo_nodos_set]
                 otros_nodos_aristas = [(edge.source, edge.to, edge.label) for edge in edges if edge.source in otros_nodos_set and edge.to in otros_nodos_set]
                 aristas_restantes = [(edge.source, edge.to, edge.label) for edge in edges if edge.source not in subgrafo_nodos_set and edge.to not in subgrafo_nodos_set]
-
                 combinaciones.append((subgrafo_nodos_set, subgrafo_aristas, otros_nodos_set, otros_nodos_aristas, aristas_restantes))
 
-        # Mostrar las combinaciones
+        # Almacenar las combinaciones en la estructura de datos deseada
         combinaciones_finales = []
         combinaciones_vistas = set()  # Para almacenar los subgrafos ya vistos
+
         for combinacion in combinaciones:
-            subgrafo_1 = combinacion[0]
-            subgrafo_2 = combinacion[2]
+            subgrafo_1 = [node_labels[nodo_id] for nodo_id in combinacion[0]]
+            subgrafo_2 = [node_labels[nodo_id] for nodo_id in combinacion[2]]
 
             # Convertir los subgrafos a listas ordenadas para comparación
             subgrafo_1_sorted = tuple(sorted(subgrafo_1))
@@ -157,7 +185,7 @@ class EjecutarApp:
             # Si alguno de los subgrafos ya ha sido visto, continuar con la siguiente iteración
             if subgrafo_1_sorted in combinaciones_vistas or subgrafo_2_sorted in combinaciones_vistas:
                 continue
-            
+
             # Verificar que tanto las aristas del primer subgrafo como las del segundo subgrafo no estén vacías
             if not combinacion[1] and not combinacion[3]:
                 continue
@@ -165,26 +193,9 @@ class EjecutarApp:
             # Si no ha sido vista, agregarla al conjunto de subgrafos vistos y a la lista de combinaciones finales
             combinaciones_vistas.add(subgrafo_1_sorted)
             combinaciones_vistas.add(subgrafo_2_sorted)
-            combinaciones_finales.append(combinacion)
+            combinaciones_finales.append((subgrafo_1_sorted, subgrafo_2_sorted))
+        return combinaciones_finales
 
-        # Mostrar la lista de combinaciones finales
-        for i, combinacion in enumerate(combinaciones_finales, 1):
-            subgrafo_1 = combinacion[0]
-            subgrafo_2 = combinacion[2]
-
-            st.write(f"Combinación {i}:")
-            st.write(f"Subgrafo 1:")
-            st.write("Nodos:")
-            for nodo_id in subgrafo_1:
-                st.write(f"{node_labels[nodo_id]}")  # Imprimir el label del nodo
-            st.write(f"Aristas: {combinacion[1]}")
-            st.write(f"Subgrafo 2:")
-            st.write("Nodos:")
-            for nodo_id in subgrafo_2:
-                st.write(f"{node_labels[nodo_id]}")  # Imprimir el label del nodo
-            st.write(f"Aristas: {combinacion[3]}")
-            
-            st.write("------------------------------------------------")
             
     def estrategia1(self):
         if st.session_state.grafo["nodes"] is None:
