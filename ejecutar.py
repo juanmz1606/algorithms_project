@@ -136,16 +136,24 @@ class EjecutarApp:
         nodes = []
         edges = []
         i = 0
+        idOrigen = 0
         
         for letra in presente:
                 nodes.append(Node(id=i+1,label=letra))
                 i += 1
+                idOrigen += 1
         for letra in futuro:
                 nodes.append(Node(id=i+1,label=letra))
                 i += 1
                 
+        for node in nodes:
+            for node2 in nodes:
+                if node.id <= idOrigen and node2.id > idOrigen:
+                    edges.append(Edge(source=node.id, target=node2.id, label="", color="#000000"))
+                
         if st.sidebar.button("click"): 
             st.write(node.to_dict() for node in nodes)
+            st.write(edge.to_dict() for edge in edges)
         
         #combinaciones = self.generar_combinaciones_subgrafos(nodes,edges)
         
