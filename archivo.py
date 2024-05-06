@@ -276,7 +276,6 @@ class ArchivoApp:
             st.rerun()
         
     def importar_datos(self):
-        # Widget para cargar el archivo JSON
         uploaded_file = st.sidebar.file_uploader("Selecciona un archivo TXT", type=["txt"])
 
         if uploaded_file is not None:

@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit_agraph import agraph, Node, Edge, Config
 from itertools import combinations
 import numpy as np
+import json
 
 class EjecutarApp:
     def __init__(self):
@@ -9,19 +10,14 @@ class EjecutarApp:
 
     def menu(self):
         submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
-                                              ["Bipartito", "Componentes conexas", 
-                                               "Parcial 1.1","Estrategia 1",
-                                               "Marginalizar"])
+                                              ["Bipartito", "Componentes conexas",
+                                              "Estrategia 1"])
         if submenu_opcion == "Bipartito":
             self.bipartito()
         if submenu_opcion == "Componentes conexas":
             self.mostrarComponentes()
-        if submenu_opcion == "Parcial 1.1":
-            self.generar_combinaciones_subgrafos()
         if submenu_opcion == "Estrategia 1":    
             self.estrategia1()
-        if submenu_opcion == "Marginalizar":    
-            self.prueba()
                         
     def bipartito(self):
         if st.session_state.grafo["nodes"] is None:
@@ -89,7 +85,6 @@ class EjecutarApp:
                 components.append(component)
         return components
 
-
     def dfs(self, node, nodes, visited, component):
         visited.add(node)
         component.add(node)
@@ -123,68 +118,6 @@ class EjecutarApp:
                                 # Si se encuentra un conflicto de color, el grafo no es bipartito
                                 return False
         return True
-    
-    def estrategia1(self):
-        tablaA = [
-            [(0, 0, 0), 1, 0],
-            [(1, 0, 0), 1, 0],
-            [(0, 1, 0), 0, 1],
-            [(1, 1, 0), 0, 1],
-            [(0, 0, 1), 0, 1],
-            [(1, 0, 1), 0, 1],
-            [(0, 1, 1), 0, 1],
-            [(1, 1, 1), 0, 1]
-        ]
-        
-        st.session_state.tablas_prob["A'"] = tablaA
-
-        tablaB = [
-            [(0, 0, 0), 1, 0],
-            [(1, 0, 0), 1, 0],
-            [(0, 1, 0), 1, 0],
-            [(1, 1, 0), 1, 0],
-            [(0, 0, 1), 1, 0],
-            [(1, 0, 1), 0, 1],
-            [(0, 1, 1), 1, 0],
-            [(1, 1, 1), 0, 1]
-        ]
-        
-        st.session_state.tablas_prob["B'"] = tablaB
-
-        tablaC = [
-            [(0, 0, 0), 1, 0],
-            [(1, 0, 0), 0, 1],
-            [(0, 1, 0), 0, 1],
-            [(1, 1, 0), 1, 0],
-            [(0, 0, 1), 1, 0],
-            [(1, 0, 1), 0, 1],
-            [(0, 1, 1), 0, 1],
-            [(1, 1, 1), 1, 0]
-        ]
-        
-        st.session_state.tablas_prob["C'"] = tablaC
-
-       # Combinar las tablas en una sola tablaF
-        tablaF = []
-
-       # Iterar sobre cada estado único (x, y, z) en las tablas
-        for entryA, entryB, entryC in zip(tablaA, tablaB, tablaC):
-            estado, valA, valB, valC = entryA[0], entryA[1:], entryB[1:], entryC[1:]
-            
-            # Verificar que los estados coincidan
-            assert estado == entryB[0] == entryC[0]
-            
-            # Calcular los resultados para cada tabla
-            resultA = 0.0 if (valA[0], valA[1]) == (1, 0) else 1.0
-            resultB = 0.0 if (valB[0], valB[1]) == (1, 0) else 1.0
-            resultC = 0.0 if (valC[0], valC[1]) == (1, 0) else 1.0
-            
-            # Agregar la entrada a tablaF con los resultados correspondientes
-            tablaF.append([estado, resultA, resultB, resultC])
-
-        # Imprimir la tablaF resultante
-        #print("tablaF3 =", tablaF)
-        
         
     def generar_combinaciones_subgrafos(self):
         if st.session_state.grafo["nodes"] is None:
@@ -253,41 +186,83 @@ class EjecutarApp:
             
             st.write("------------------------------------------------")
             
-    def prueba(self):
-        estados = [1,0]
-        presente = "AC"
-        variables = ""
-        destinos = []
+    def estrategia1(self):
+        if st.session_state.grafo["nodes"] is None:
+            st.sidebar.warning("No se tiene un grafo en la aplicación.")
+            return
         
-        for edge in st.session_state.grafo["edges"]:
-            destinos.append(edge.to)
+        presente = st.sidebar.text_input("Valores presentes")
+        futuro = st.sidebar.text_input("Valores futuros")
+        estadosString = st.sidebar.text_input("Estado inicial")
+        
+        estados = [int(estado) for estado in estadosString]
+        
+        # Separar los valores usando el caracter de comillas como delimitador
+        valores_futuros_lista = futuro.split("'")
+
+        # Eliminar elementos vacíos y espacios adicionales
+        valores_futuros_lista = [valor.strip() for valor in valores_futuros_lista if valor.strip()]
+
+        # Agregar comillas simples alrededor de cada letra
+        futuro = [f"{valor}'" for valor in valores_futuros_lista]
+        
+        # Pedir al usuario que ingrese la ruta del archivo
+        ruta_archivo = st.sidebar.file_uploader("Selecciona un archivo JSON", type=["json"])
+        
+        if ruta_archivo is not None:
+            json_data = json.load(ruta_archivo)
+        
+            for dato in json_data:
+                st.session_state.tablas_prob[dato["nombre"]] = dato["probabilidades"]
+                
+            variables = ""
+            destinos = []
             
-        for node in st.session_state.grafo["nodes"]:
-            if node.id not in destinos:
-                variables += node.label
+            for edge in st.session_state.grafo["edges"]:
+                destinos.append(edge.to)
+                
+            for node in st.session_state.grafo["nodes"]:
+                if node.id not in destinos:
+                    variables += node.label
+            
+            estadoInicial = {var: (estados.pop(0) if var in presente else None) for var in variables}
+            
+            tabla_marg = []
+            tensores = []
+            
+            tabla_marg.append(self.vacio("C'"))
+            
+            # Iterar sobre cada tabla_name en futuro y llamar a marginalizar
+            for tabla_name in futuro:
+                tabla_marg.append(self.marginalizar(tabla_name, presente, estadoInicial))
+                
+            # Mostrar las listas en tabla_marg
+            for i, lista in enumerate(tabla_marg):
+                st.write(f"Lista {i + 1}: {lista}")
+                
+                # Calcular el producto tensorial de Kronecker para cada tensor en la lista
+            for i, tensor in enumerate(tabla_marg):
+                if i == 0:
+                    producto_tensorial = tensor
+                else:
+                    producto_tensorial = np.kron(producto_tensorial, tensor)
+            st.write(f"Producto Tensorial: {producto_tensorial}")
+            tensores.append(producto_tensorial)
         
-        futuro = ["A'", "B'", "C'"]
+    def vacio(self,futuroVacio):
+        tabla_original = st.session_state.tablas_prob[futuroVacio]
+        sumaFilaCero = 0
+        sumaFilaUno = 0
+        tabla_vacio = []
+        i = 0
         
-        estadoInicial = {var: (estados.pop(0) if var in presente else None) for var in variables}
-        
-        tabla_marg = []
-        
-        # Iterar sobre cada tabla_name en futuro y llamar a marginalizar
-        for tabla_name in futuro:
-            tabla_marg.append(self.marginalizar(tabla_name, presente, estadoInicial))
-        
-        # Mostrar las listas en tabla_marg
-        for i, lista in enumerate(tabla_marg):
-            st.write(f"Lista {i + 1}: {lista}")
-        
-        # Calcular el producto tensorial de Kronecker para cada tensor en la lista
-        for i, tensor in enumerate(tabla_marg):
-            if i == 0:
-                producto_tensorial = tensor
-            else:
-                producto_tensorial = np.kron(producto_tensorial, tensor)
-        st.write(f"Producto Tensorial: {producto_tensorial}")
-        
+        for fila in tabla_original:
+            sumaFilaCero += fila[1]
+            sumaFilaUno += fila[2]
+            i += 1
+            
+        tabla_vacio = (sumaFilaCero / i, sumaFilaUno / i)
+        return tabla_vacio
         
     def marginalizar(self, tabla_name, presente, estadoInicial):
         tabla_original = st.session_state.tablas_prob[tabla_name]
@@ -326,7 +301,3 @@ class EjecutarApp:
             st.write("------------------------------------------------")
 
         return resultado1, resultado2
-
-
-        
-        
