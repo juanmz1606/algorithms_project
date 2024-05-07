@@ -11,15 +11,13 @@ class EjecutarApp:
     def menu(self):
         submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
                                               ["Bipartito", "Componentes conexas",
-                                              "Estrategia 1", "Estrategia 2"])
+                                              "Estrategia 1"])
         if submenu_opcion == "Bipartito":
             self.bipartito()
         if submenu_opcion == "Componentes conexas":
             self.mostrarComponentes()
         if submenu_opcion == "Estrategia 1":    
             self.estrategia1()
-        if submenu_opcion == "Estrategia 2":
-            self.crearGrafoEstados()
                         
     def bipartito(self):
         if st.session_state.grafo["nodes"] is None:
@@ -71,6 +69,131 @@ class EjecutarApp:
                     st.sidebar.write("El grafo es conexo con una sola componente.")
         else:
                 st.sidebar.write("El grafo no es bipartito. No se pueden evaluar componentes.")
+                
+    def estrategia1(self):
+        if st.session_state.grafo["nodes"] is None:
+            st.sidebar.warning("No se tiene un grafo en la aplicación.")
+            return
+        
+        presenteUsuario = st.sidebar.text_input("Valores presentes")
+        futuroUsuario = st.sidebar.text_input("Valores futuros")
+        estadosString = st.sidebar.text_input("Estado inicial")
+        
+        # Pedir al usuario que ingrese la ruta del archivo
+        ruta_archivo = st.sidebar.file_uploader("Selecciona un archivo JSON", type=["json"])
+        
+        if ruta_archivo is not None:
+            json_data = json.load(ruta_archivo)
+        
+            # Separar los valores usando el caracter de comillas como delimitador
+            valores_futuros_lista = futuroUsuario.split("'")
+
+            # Eliminar elementos vacíos y espacios adicionales
+            valores_futuros_lista = [valor.strip() for valor in valores_futuros_lista if valor.strip()]
+
+            # Agregar comillas simples alrededor de cada letra
+            futuroUsuario = [f"{valor}'" for valor in valores_futuros_lista]
+            nodes = []
+            edges = []
+            i = 0
+            idOrigen = 0
+            
+            for letra in presenteUsuario:
+                    nodes.append(Node(id=i+1,label=letra))
+                    i += 1
+                    idOrigen += 1
+            for letra in futuroUsuario:
+                    nodes.append(Node(id=i+1,label=letra))
+                    i += 1
+                    
+            for node in nodes:
+                for node2 in nodes:
+                    if node.id <= idOrigen and node2.id > idOrigen:
+                        edges.append(Edge(source=node.id, target=node2.id, label="", color="#000000"))
+            
+            combinaciones = self.generar_combinaciones_subgrafos(nodes,edges)
+            #st.write(combinaciones)
+            futuro = ""
+            presente = ""
+            tensores = []
+            
+            tabla_marg = []
+            
+            for combinacion in combinaciones:
+                
+                for letra in combinacion[0]:
+                    if "'" in letra:
+                        futuro += letra
+                    else:
+                        presente += letra
+                #Evaluar subgrafo
+                for marg in self.generar_probabilidad(futuro, presente,estadosString,json_data):
+                    tabla_marg.append(marg)
+                
+                futuro = ""
+                presente = ""
+                
+                for letra in combinaciones[1]: 
+                    if "'" in letra:
+                        futuro += letra
+                    else:
+                        presente += letra
+                #Evaluar subgrafo2
+                for marg in self.generar_probabilidad(futuro, presente,estadosString,json_data):
+                    tabla_marg.append(marg)
+        
+            # Calcular el producto tensorial de Kronecker para cada tensor en la lista
+            for i, tensor in enumerate(tabla_marg):
+                if i == 0:
+                    producto_tensorial = tensor
+                else:
+                    producto_tensorial = np.kron(producto_tensorial, tensor)
+            tensores.append(producto_tensorial)
+            
+            for i, tensor in tensores:
+                st.write("Tensor")
+                st.write(tensores)
+                st.write("--------------------------------")
+            
+    def generar_probabilidad(self,futuro,presente, estadosString, json_data):
+        
+        estados = [int(estado) for estado in estadosString]
+        
+        # Separar los valores usando el caracter de comillas como delimitador
+        valores_futuros_lista = futuro.split("'")
+
+        # Eliminar elementos vacíos y espacios adicionales
+        valores_futuros_lista = [valor.strip() for valor in valores_futuros_lista if valor.strip()]
+
+        # Agregar comillas simples alrededor de cada letra
+        futuro = [f"{valor}'" for valor in valores_futuros_lista]
+        
+        for dato in json_data:
+            st.session_state.tablas_prob[dato["nombre"]] = dato["probabilidades"]
+            
+        variables = ""
+        destinos = []
+        tabla_marg = []
+        
+        for edge in st.session_state.grafo["edges"]:
+            destinos.append(edge.to)
+            
+        for node in st.session_state.grafo["nodes"]:
+            if node.id not in destinos:
+                variables += node.label
+        
+        estadoInicial = {var: (estados.pop(0) if var in presente else None) for var in variables}
+        if presente == '':
+            
+            for tabla_name in futuro:
+                tabla_marg.append(self.vacio(tabla_name))
+        
+        else:
+            # Iterar sobre cada tabla_name en futuro y llamar a marginalizar
+            for tabla_name in futuro:
+                tabla_marg.append(self.marginalizar(tabla_name, presente, estadoInicial))
+            
+        return tabla_marg
 
     def obtenerComponentesConexas(self):
         nodes = {node.id: [] for node in st.session_state.grafo["nodes"]}
@@ -121,44 +244,6 @@ class EjecutarApp:
                                 return False
         return True
     
-    def crearGrafoEstados(self):
-        presente = st.sidebar.text_input("Valores presentes")
-        futuro = st.sidebar.text_input("Valores futuros")
-        
-        # Separar los valores usando el caracter de comillas como delimitador
-        valores_futuros_lista = futuro.split("'")
-
-        # Eliminar elementos vacíos y espacios adicionales
-        valores_futuros_lista = [valor.strip() for valor in valores_futuros_lista if valor.strip()]
-
-        # Agregar comillas simples alrededor de cada letra
-        futuro = [f"{valor}'" for valor in valores_futuros_lista]
-        nodes = []
-        edges = []
-        i = 0
-        idOrigen = 0
-        
-        for letra in presente:
-                nodes.append(Node(id=i+1,label=letra))
-                i += 1
-                idOrigen += 1
-        for letra in futuro:
-                nodes.append(Node(id=i+1,label=letra))
-                i += 1
-                
-        for node in nodes:
-            for node2 in nodes:
-                if node.id <= idOrigen and node2.id > idOrigen:
-                    edges.append(Edge(source=node.id, target=node2.id, label="", color="#000000"))
-                
-        if st.sidebar.button("click"): 
-            st.write(node.to_dict() for node in nodes)
-            st.write(edge.to_dict() for edge in edges)
-        
-        #combinaciones = self.generar_combinaciones_subgrafos(nodes,edges)
-        
-        
-        
     def generar_combinaciones_subgrafos(self,nodes,edges):
         if st.session_state.grafo["nodes"] is None:
             st.sidebar.warning("No se tiene un grafo en la aplicación.")
@@ -203,78 +288,6 @@ class EjecutarApp:
             combinaciones_vistas.add(subgrafo_2_sorted)
             combinaciones_finales.append((subgrafo_1_sorted, subgrafo_2_sorted))
         return combinaciones_finales
-
-            
-    def estrategia1(self):
-        if st.session_state.grafo["nodes"] is None:
-            st.sidebar.warning("No se tiene un grafo en la aplicación.")
-            return
-        
-        presente = st.sidebar.text_input("Valores presentes")
-        futuro = st.sidebar.text_input("Valores futuros")
-        estadosString = st.sidebar.text_input("Estado inicial")
-        
-        estados = [int(estado) for estado in estadosString]
-        
-        # Separar los valores usando el caracter de comillas como delimitador
-        valores_futuros_lista = futuro.split("'")
-
-        # Eliminar elementos vacíos y espacios adicionales
-        valores_futuros_lista = [valor.strip() for valor in valores_futuros_lista if valor.strip()]
-
-        # Agregar comillas simples alrededor de cada letra
-        futuro = [f"{valor}'" for valor in valores_futuros_lista]
-        
-        # Pedir al usuario que ingrese la ruta del archivo
-        ruta_archivo = st.sidebar.file_uploader("Selecciona un archivo JSON", type=["json"])
-        
-        if ruta_archivo is not None:
-            json_data = json.load(ruta_archivo)
-        
-            for dato in json_data:
-                st.session_state.tablas_prob[dato["nombre"]] = dato["probabilidades"]
-                
-            #PARTIR DATOS FUTUROS Y PRESENTES DEL USUARIO
-            
-            
-            #ITERAR EN ESA PARTICION PARA AGREGARLA A LA LISTA DE MARGINALIZADOS
-                
-            variables = ""
-            destinos = []
-            tabla_marg = []
-            tensores = []
-            
-            for edge in st.session_state.grafo["edges"]:
-                destinos.append(edge.to)
-                
-            for node in st.session_state.grafo["nodes"]:
-                if node.id not in destinos:
-                    variables += node.label
-            
-            estadoInicial = {var: (estados.pop(0) if var in presente else None) for var in variables}
-            
-            if presente == '':
-                for tabla_name in futuro:
-                    tabla_marg.append(self.vacio(tabla_name))
-            
-            else:
-                # Iterar sobre cada tabla_name en futuro y llamar a marginalizar
-                for tabla_name in futuro:
-                    tabla_marg.append(self.marginalizar(tabla_name, presente, estadoInicial))
-                    
-            # Mostrar las listas en tabla_marg
-            for i, lista in enumerate(tabla_marg):
-                st.write(f"Lista {i + 1}: {lista}")
-                
-                # Calcular el producto tensorial de Kronecker para cada tensor en la lista
-            for i, tensor in enumerate(tabla_marg):
-                if i == 0:
-                    producto_tensorial = tensor
-                else:
-                    producto_tensorial = np.kron(producto_tensorial, tensor)
-     
-            st.write(f"Producto Tensorial: {producto_tensorial}")
-            tensores.append(producto_tensorial)
         
     def vacio(self,presenteVacio):
         tabla_original = st.session_state.tablas_prob[presenteVacio]
