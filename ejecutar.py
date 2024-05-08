@@ -74,9 +74,8 @@ class EjecutarApp:
         if st.session_state.grafo["nodes"] is None:
             st.sidebar.warning("No se tiene un grafo en la aplicación.")
             return
-        
         presenteUsuario = st.sidebar.text_input("Valores presentes")
-        futuroUsuario = st.sidebar.text_input("Valores futuros")
+        futuroUsuarioString = st.sidebar.text_input("Valores futuros")
         estadosString = st.sidebar.text_input("Estado inicial")
         
         # Pedir al usuario que ingrese la ruta del archivo
@@ -86,13 +85,14 @@ class EjecutarApp:
             json_data = json.load(ruta_archivo)
         
             # Separar los valores usando el caracter de comillas como delimitador
-            valores_futuros_lista = futuroUsuario.split("'")
+            valores_futuros_lista = futuroUsuarioString.split("'")
 
             # Eliminar elementos vacíos y espacios adicionales
             valores_futuros_lista = [valor.strip() for valor in valores_futuros_lista if valor.strip()]
 
             # Agregar comillas simples alrededor de cada letra
             futuroUsuario = [f"{valor}'" for valor in valores_futuros_lista]
+            
             nodes = []
             edges = []
             i = 0
@@ -111,49 +111,75 @@ class EjecutarApp:
                     if node.id <= idOrigen and node2.id > idOrigen:
                         edges.append(Edge(source=node.id, target=node2.id, label="", color="#000000"))
             
+            tabla_margOriginal = []
+            probabilidadOriginal = self.generar_probabilidad(futuroUsuarioString, presenteUsuario,
+                                                             estadosString,json_data)
+            if probabilidadOriginal is not None:
+                    for margOriginal in probabilidadOriginal:
+                        tabla_margOriginal.append(margOriginal)
+                        
+            #Calcular el producto tensorial de Kronecker para cada tensor en la lista
+            for i, tensor in enumerate(tabla_margOriginal):
+                if i == 0:
+                    producto_tensorial = tensor
+                else:
+                    producto_tensorial = np.kron(producto_tensorial, tensor)
+                    
+            tensorOriginal = producto_tensorial.copy()
+            
+            st.write(probabilidadOriginal)
+            st.write(tensorOriginal)
+            
             combinaciones = self.generar_combinaciones_subgrafos(nodes,edges)
-            #st.write(combinaciones)
-            futuro = ""
-            presente = ""
+            
             tensores = []
             
-            tabla_marg = []
-            
             for combinacion in combinaciones:
-                
+                futuro = ""
+                presente = ""
+                tabla_marg = []
                 for letra in combinacion[0]:
                     if "'" in letra:
                         futuro += letra
                     else:
                         presente += letra
-                #Evaluar subgrafo
-                for marg in self.generar_probabilidad(futuro, presente,estadosString,json_data):
-                    tabla_marg.append(marg)
-                
+                        
+                #Evaluar subgrafo1
+                probabilidad = self.generar_probabilidad(futuro, presente,estadosString,json_data)
+                if probabilidad is not None:
+                    for marg in probabilidad:
+                        tabla_marg.append(marg)
+                    
                 futuro = ""
                 presente = ""
-                
-                for letra in combinaciones[1]: 
+                for letra in combinacion[1]: 
                     if "'" in letra:
+                        
                         futuro += letra
                     else:
                         presente += letra
+                        
                 #Evaluar subgrafo2
-                for marg in self.generar_probabilidad(futuro, presente,estadosString,json_data):
-                    tabla_marg.append(marg)
+                probabilidad = self.generar_probabilidad(futuro, presente,estadosString,json_data)
+                if probabilidad is not None:
+                    for marg in probabilidad:
+                        tabla_marg.append(marg)
         
-            # Calcular el producto tensorial de Kronecker para cada tensor en la lista
-            for i, tensor in enumerate(tabla_marg):
-                if i == 0:
-                    producto_tensorial = tensor
-                else:
-                    producto_tensorial = np.kron(producto_tensorial, tensor)
-            tensores.append(producto_tensorial)
-            
-            for i, tensor in tensores:
-                st.write("Tensor")
-                st.write(tensores)
-                st.write("--------------------------------")
+                # Calcular el producto tensorial de Kronecker para cada tensor en la lista
+                for i, tensor in enumerate(tabla_marg):
+                    if i == 0:
+                        producto_tensorial = tensor
+                    else:
+                        producto_tensorial = np.kron(producto_tensorial, tensor)
+                tensores.append(producto_tensorial.copy())
+                
+                st.write(combinacion)
+                st.write(tabla_marg)
+                st.write(producto_tensorial)
+                
+            #for tensor in tensores:
+                #Aca se tiene cada tensor de cada combinacion
+                #Comparar con el original para obtener cierto valor de peso
             
     def generar_probabilidad(self,futuro,presente, estadosString, json_data):
         
@@ -167,6 +193,9 @@ class EjecutarApp:
 
         # Agregar comillas simples alrededor de cada letra
         futuro = [f"{valor}'" for valor in valores_futuros_lista]
+        
+        if not futuro:
+            return
         
         for dato in json_data:
             st.session_state.tablas_prob[dato["nombre"]] = dato["probabilidades"]
@@ -245,10 +274,6 @@ class EjecutarApp:
         return True
     
     def generar_combinaciones_subgrafos(self,nodes,edges):
-        if st.session_state.grafo["nodes"] is None:
-            st.sidebar.warning("No se tiene un grafo en la aplicación.")
-            return
-
         # Mapear los identificadores de los nodos a sus labels
         node_labels = {node.id: node.label for node in nodes}
 
@@ -306,38 +331,27 @@ class EjecutarApp:
         
     def marginalizar(self, tabla_name, presente, estadoInicial):
         tabla_original = st.session_state.tablas_prob[tabla_name]
-
-        # Obtaining the indices of the present variables
         indices_presente = [ord(var) - ord('A') for var in presente]
-
         suma_penultimos_valores = 0
         suma_ultimos_valores = 0
-        
-        # Iterating over each row of the table
+        contador_filas = 0  # Nueva variable para contar las filas
+
         for fila in tabla_original:
-            # Checking if the values of the present variables satisfy the conditions
             condicion_cumplida = True
             for i in range(len(presente)):
                 if estadoInicial[presente[i]] is not None and fila[0][indices_presente[i]] != estadoInicial[presente[i]]:
                     condicion_cumplida = False
                     break
-       
-            if condicion_cumplida:
-                st.write(f"{presente}: {fila}")
 
+            if condicion_cumplida:
                 tupla1 = fila[0]
-        
                 penultimo_valor = fila[1]
                 ultimo_valor = fila[2]
-
                 suma_penultimos_valores += penultimo_valor
                 suma_ultimos_valores += ultimo_valor
+                contador_filas += 1  # Incrementar el contador de filas
 
-        # Calcular los resultados finales promediando los valores sumados
         if tabla_original:
-            resultado1 = suma_penultimos_valores / 2
-            resultado2 = suma_ultimos_valores / 2
-            st.write(f"Marginalizacion {presente} ({tupla1[0]}, {tupla1[2]}) {tabla_name}: ({resultado1}, {resultado2})")
-            st.write("------------------------------------------------")
-
-        return resultado1, resultado2
+            resultado1 = suma_penultimos_valores / contador_filas  # Dividir por el contador de filas
+            resultado2 = suma_ultimos_valores / contador_filas  # Dividir por el contador de filas
+            return resultado1, resultado2
