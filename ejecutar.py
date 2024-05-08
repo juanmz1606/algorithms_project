@@ -3,6 +3,7 @@ from streamlit_agraph import agraph, Node, Edge, Config
 from itertools import combinations
 import numpy as np
 import json
+from scipy.stats import wasserstein_distance
 
 class EjecutarApp:
     def __init__(self):
@@ -176,10 +177,18 @@ class EjecutarApp:
                 st.write(combinacion)
                 st.write(tabla_marg)
                 st.write(producto_tensorial)
+            
+            # Calcular la distancia de Wasserstein (EMD) entre cada tensor y el tensor original
+            lista_emd = []
+            for tensor in tensores:
+                emd_distance = wasserstein_distance(np.arange(tensor.size), np.arange(tensorOriginal.size),
+                                                    u_weights=tensor, v_weights=tensorOriginal)
+                lista_emd.append(emd_distance)
                 
-            #for tensor in tensores:
-                #Aca se tiene cada tensor de cada combinacion
-                #Comparar con el original para obtener cierto valor de peso
+                st.write(f"Distancia de Wasserstein (EMD) entre tensor y tensorOriginal: {emd_distance}")
+            lista_emd = np.array(lista_emd)
+            #st.write(lista_emd)
+
             
     def generar_probabilidad(self,futuro,presente, estadosString, json_data):
         
