@@ -187,7 +187,9 @@ class EjecutarApp:
                 
                 st.write(f"Distancia de Wasserstein (EMD) entre tensor y tensorOriginal: {emd_distance}")
             lista_emd = np.array(lista_emd)
-            #st.write(lista_emd)
+            
+            menor_perdida = min(lista_emd)
+            st.write(f"Menor perdida: {menor_perdida}")
 
             
     def generar_probabilidad(self,futuro,presente, estadosString, json_data):
