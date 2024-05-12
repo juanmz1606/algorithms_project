@@ -4,6 +4,7 @@ from itertools import combinations
 import numpy as np
 import json
 from scipy.stats import wasserstein_distance
+import pandas as pd
 
 class EjecutarApp:
     def __init__(self):
@@ -137,6 +138,7 @@ class EjecutarApp:
             tensores = []
             
             for combinacion in combinaciones:
+                bandera = True
                 futuro = ""
                 presente = ""
                 tabla_marg = []
@@ -148,9 +150,10 @@ class EjecutarApp:
                         
                 #Evaluar subgrafo1
                 probabilidad = self.generar_probabilidad(futuro, presente,estadosString,json_data)
-                if probabilidad is not None:
-                    for marg in probabilidad:
-                        tabla_marg.append(marg)
+                if probabilidad is None:
+                    continue 
+                for marg in probabilidad:
+                    tabla_marg.append(marg)
                     
                 futuro = ""
                 presente = ""
@@ -163,9 +166,10 @@ class EjecutarApp:
                         
                 #Evaluar subgrafo2
                 probabilidad = self.generar_probabilidad(futuro, presente,estadosString,json_data)
-                if probabilidad is not None:
-                    for marg in probabilidad:
-                        tabla_marg.append(marg)
+                if probabilidad is None:
+                    continue 
+                for marg in probabilidad:
+                    tabla_marg.append(marg)
         
                 # Calcular el producto tensorial de Kronecker para cada tensor en la lista
                 for i, tensor in enumerate(tabla_marg):
@@ -197,6 +201,16 @@ class EjecutarApp:
             # La combinación correspondiente a la menor pérdida
             combinacion_menor_perdida = combinaciones[indice_menor_perdida]
             tensor_menor_perdida = tensores[indice_menor_perdida]
+            
+            
+            # Suponiendo que 'tensor_menor_perdida' y 'tensorOriginal' son arrays de numpy
+            tensor_menor_perdida = np.array(tensor_menor_perdida)
+            tensorOriginal = np.array(tensorOriginal)
+            
+            tensores_concatenados = np.vstack((tensor_menor_perdida, tensorOriginal))
+
+            
+            df_tensores  = pd.DataFrame(tensores_concatenados)
 
             # Estilo CSS
             st.markdown(
@@ -236,17 +250,12 @@ class EjecutarApp:
             st.markdown("<div class='subtitle'>Corte del sistema con menor pérdida:</div>", unsafe_allow_html=True)
             st.markdown(f"<div class='content'>{combinacion_menor_perdida}</div>", unsafe_allow_html=True)
 
-            st.markdown("<div class='subtitle'>Tensor correspondiente:</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='content'>{tensor_menor_perdida}</div>", unsafe_allow_html=True)
-
-            st.markdown("<div class='subtitle'>Tensor original:</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='content'>{tensorOriginal}</div>", unsafe_allow_html=True)
+            st.markdown("<div class='subtitle'>Tensor correspondiente vs Tensor original:</div>", 
+                        unsafe_allow_html=True)
+            st.text(df_tensores.to_string(index=False, header=False))
 
             st.markdown("<div class='subtitle'>Total de pérdida del sistema con el corte:</div>", unsafe_allow_html=True)
             st.write(f"Pérdida total: {menor_perdida:.2f}")
-
-            
-
 
             
     def generar_probabilidad(self,futuro,presente, estadosString, json_data):
@@ -263,7 +272,7 @@ class EjecutarApp:
         futuro = [f"{valor}'" for valor in valores_futuros_lista]
         
         if not futuro:
-            return
+            return None
         
         for dato in json_data:
             st.session_state.tablas_prob[dato["nombre"]] = dato["probabilidades"]
@@ -369,8 +378,8 @@ class EjecutarApp:
             subgrafo_2_sorted = tuple(sorted(subgrafo_2))
 
             # Si alguno de los subgrafos ya ha sido visto, continuar con la siguiente iteración
-            if subgrafo_1_sorted in combinaciones_vistas or subgrafo_2_sorted in combinaciones_vistas:
-                continue
+            #if subgrafo_1_sorted in combinaciones_vistas or subgrafo_2_sorted in combinaciones_vistas:
+            #    continue
 
             # Verificar que tanto las aristas del primer subgrafo como las del segundo subgrafo no estén vacías
             if not combinacion[1] and not combinacion[3]:
