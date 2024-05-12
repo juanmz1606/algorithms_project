@@ -5,6 +5,7 @@ import numpy as np
 import json
 from scipy.stats import wasserstein_distance
 import pandas as pd
+import copy
 
 class EjecutarApp:
     def __init__(self):
@@ -13,13 +14,15 @@ class EjecutarApp:
     def menu(self):
         submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
                                               ["Bipartito", "Componentes conexas",
-                                              "Estrategia 1"])
+                                              "Estrategia 1","Estrategia 2"])
         if submenu_opcion == "Bipartito":
             self.bipartito()
         if submenu_opcion == "Componentes conexas":
             self.mostrarComponentes()
         if submenu_opcion == "Estrategia 1":    
             self.estrategia1()
+        if submenu_opcion == "Estrategia 2":    
+            self.estrategia2()
                         
     def bipartito(self):
         if st.session_state.grafo["nodes"] is None:
@@ -53,6 +56,8 @@ class EjecutarApp:
                         config = st.session_state.grafo["config"]  # Usar la misma configuración que el grafo original
                         # Guardar el grafo de la componente en el estado de la sesión
                         st.session_state.componentes_conexas.append((selected_nodes, selected_edges, config))
+                        
+                        #(("A'",), ('A', "B'", 'C', "C'"))
 
                         
                     # Verificar si se ha seleccionado una componente y mostrarla
@@ -138,7 +143,6 @@ class EjecutarApp:
             tensores = []
             
             for combinacion in combinaciones:
-                bandera = True
                 futuro = ""
                 presente = ""
                 tabla_marg = []
@@ -179,7 +183,7 @@ class EjecutarApp:
                         producto_tensorial = np.kron(producto_tensorial, tensor)
                 tensores.append(producto_tensorial.copy())
                 
-                #st.write(combinacion)
+                st.write(combinacion)
                 #st.write(tabla_marg)
                 #st.write(producto_tensorial)
             
@@ -256,6 +260,60 @@ class EjecutarApp:
 
             st.markdown("<div class='subtitle'>Total de pérdida del sistema con el corte:</div>", unsafe_allow_html=True)
             st.write(f"Pérdida total: {menor_perdida:.2f}")
+            
+            
+    def estrategia2(self):
+        if st.session_state.grafo["nodes"] is None:
+            st.sidebar.warning("No se tiene un grafo en la aplicación.")
+            return
+        if self.isBipartito():
+            #Salvar el grafo original
+            #st.session_state.grafo_temporal = copy.deepcopy(st.session_state.grafo)
+            
+            #Tomamos aristas del grafo
+            #Eliminamos arista por arista verificando si vale 0 se borra:
+            
+            ##Borrar arista del grafo original
+            ##El valor se almacena en el label de las aristas
+            
+            #Se verifica si hay particion en el grafo original sin la arista
+            componentes = self.obtenerComponentesConexas()
+            
+            #si componentes es mayor a 1, hay partición
+            if len(componentes) > 1:
+                ##SE ACABA LA ESTRATEGIA Y SE DEVUELVE EL GRAFO A SU ESTADO ORIGINAL
+                #st.session_state.grafo = copy.deepcopy(st.session_state.grafo_temporal)
+                return
+            
+            #Si no hay particion volvemos al for y borra otra. Hasta que borra todas
+            #Se sale del ciclo
+            
+            #ListaLabelAristas = []
+            #ListaLabelAristas= [edge.label for edge in st.session_state.grafo["edges"])]
+            
+            
+            #while componentes <=1
+            #Busca la arista mas baja y la borra
+            
+            #aristaMenorPerdida =  min(ListaLabelAristas)
+            #ListaLabelAristas.remove(aristaMenorPerdida) CREO QUE ES ASI
+            
+            #Se verifica si hay particion en el grafo original sin la arista
+            componentes = self.obtenerComponentesConexas()
+            
+            #Sale del while
+            
+            
+            ##SE ACABA LA ESTRATEGIA Y SE DEVUELVE EL GRAFO A SU ESTADO ORIGINAL
+            #st.session_state.grafo = copy.deepcopy(st.session_state.grafo_temporal)
+            
+            
+            
+            
+            
+            
+            
+        return
 
             
     def generar_probabilidad(self,futuro,presente, estadosString, json_data):
