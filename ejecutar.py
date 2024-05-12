@@ -128,8 +128,9 @@ class EjecutarApp:
                     
             tensorOriginal = producto_tensorial.copy()
             
-            st.write(probabilidadOriginal)
-            st.write(tensorOriginal)
+            #st.write("Tensor original")
+            #st.write(probabilidadOriginal)
+            #st.write(tensorOriginal)
             
             combinaciones = self.generar_combinaciones_subgrafos(nodes,edges)
             
@@ -174,22 +175,78 @@ class EjecutarApp:
                         producto_tensorial = np.kron(producto_tensorial, tensor)
                 tensores.append(producto_tensorial.copy())
                 
-                st.write(combinacion)
-                st.write(tabla_marg)
-                st.write(producto_tensorial)
+                #st.write(combinacion)
+                #st.write(tabla_marg)
+                #st.write(producto_tensorial)
             
             # Calcular la distancia de Wasserstein (EMD) entre cada tensor y el tensor original
             lista_emd = []
-            for tensor in tensores:
+            for i, tensor in enumerate(tensores):
                 emd_distance = wasserstein_distance(np.arange(tensor.size), np.arange(tensorOriginal.size),
                                                     u_weights=tensor, v_weights=tensorOriginal)
                 lista_emd.append(emd_distance)
-                
-                st.write(f"Distancia de Wasserstein (EMD) entre tensor y tensorOriginal: {emd_distance}")
+                #st.write(f"Combinación: {combinaciones[i]}")
+                #st.write(f"Distancia de Wasserstein (EMD) entre tensor y tensorOriginal: {emd_distance}")
+
             lista_emd = np.array(lista_emd)
+
+            # Encuentra el índice de la menor pérdida
+            indice_menor_perdida = np.argmin(lista_emd)
+            menor_perdida = lista_emd[indice_menor_perdida]
+
+            # La combinación correspondiente a la menor pérdida
+            combinacion_menor_perdida = combinaciones[indice_menor_perdida]
+            tensor_menor_perdida = tensores[indice_menor_perdida]
+
+            # Estilo CSS
+            st.markdown(
+                """
+                <style>
+                    .title {
+                        font-family: 'Georgia', serif;
+                        font-size: 42px;
+                        color: #333333;
+                        text-align: center;
+                        margin-bottom: 20px;
+                    }
+                    .subtitle {
+                        font-family: 'Helvetica Neue', sans-serif;
+                        font-size: 24px;
+                        color: #666666;
+                        margin-top: 20px;
+                        margin-bottom: 10px;
+                    }
+                    .content {
+                        font-family: 'Helvetica Neue', sans-serif;
+                        font-size: 16px;
+                        color: #666666;
+                        padding: 10px;
+                        background-color: #f5f5f5;
+                        border-radius: 5px;
+                    }
+                </style>
+                """,
+                unsafe_allow_html=True
+            )
+
+            # Título principal
+            st.markdown("<div class='title'>Resultados del análisis</div>", unsafe_allow_html=True)
+
+            # Subtítulos y contenido
+            st.markdown("<div class='subtitle'>Corte del sistema con menor pérdida:</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='content'>{combinacion_menor_perdida}</div>", unsafe_allow_html=True)
+
+            st.markdown("<div class='subtitle'>Tensor correspondiente:</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='content'>{tensor_menor_perdida}</div>", unsafe_allow_html=True)
+
+            st.markdown("<div class='subtitle'>Tensor original:</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='content'>{tensorOriginal}</div>", unsafe_allow_html=True)
+
+            st.markdown("<div class='subtitle'>Total de pérdida del sistema con el corte:</div>", unsafe_allow_html=True)
+            st.write(f"Pérdida total: {menor_perdida:.2f}")
+
             
-            menor_perdida = min(lista_emd)
-            st.write(f"Menor perdida: {menor_perdida}")
+
 
             
     def generar_probabilidad(self,futuro,presente, estadosString, json_data):
