@@ -263,12 +263,36 @@ class EjecutarApp:
             
             
     def estrategia2(self):
+        #https://jamboard.google.com/d/1vw3ZecpkP_Gx9WsIwfEt9OCf4LmykMSKxRGr6w389D0/viewer?mtt=hnt54sky4247&f=3
         if st.session_state.grafo["nodes"] is None:
             st.sidebar.warning("No se tiene un grafo en la aplicación.")
             return
         if self.isBipartito():
             #Salvar el grafo original
             #st.session_state.grafo_temporal = copy.deepcopy(st.session_state.grafo)
+            
+            ##ORIGINAL
+            #A*B*C -> Producto tensor, entre cada futuro usando como inicial cada presente "100"
+            
+            #Para obtener el valor de una arista
+            # el nodo origen de la arista, se quita de los nodos presente
+            #presente = "ABC" -> Original son todos los nodos presente !!No lo ingresa el usuario
+            #Al borrar la arista, presente = "AC", tomando en cuenta que el nodo origen era "B"
+            
+            #futuro = "A'B'C'" -> Original todos los nodos que tengan '
+            #futuro = "A'" -> Nodo destino edge.to de la arista eliminada
+            
+            #Se hace la marginalizacion para el nodo futuro de la arista eliminada
+            #Se llama a la funcion obtenerProbabilidad de futuro = "A'"
+            
+            #Luego producto tensor entre esa marginalizacion del paso anterior 
+                # y los demas futuros sin marginalizar
+            #Esto significa que no se le quitan futuros ni presentes 
+                #pero si se le debe mandar un estado inicial
+            
+            ##Dicha marg se hace producto tensor con las otras probabilidades sin marginalizar
+
+            
             
             #Tomamos aristas del grafo
             #Eliminamos arista por arista verificando si vale 0 se borra:
