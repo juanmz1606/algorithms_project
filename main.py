@@ -22,6 +22,9 @@ class GraphApp:
             
         if 'tablas_prob' not in st.session_state:
             st.session_state.tablas_prob = {}
+            
+        if 'grafo_temporal' not in st.session_state:
+            st.session_state.grafo_temporal = {}
 
     def menu_principal(self):
         # Restaurar o inicializar el estado de la sesión
@@ -49,11 +52,6 @@ class GraphApp:
         elif seleccion == "Ayuda":
             ayuda_app = AyudaApp()
             ayuda_app.menu() 
-
-    def ejecutar(self):
-        st.header("Página de ejecutar")
-        submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
-                                              ["Procesos"])
                 
     def herramientas(self):
         st.header("Página de herramientas")
