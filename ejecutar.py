@@ -286,6 +286,7 @@ class EjecutarApp:
             ruta_archivo = st.sidebar.file_uploader("Selecciona un archivo JSON", type=["json"])
             
             if ruta_archivo is not None:
+                
                 json_data = json.load(ruta_archivo)
                 
                 ##ORIGINAL
@@ -301,6 +302,7 @@ class EjecutarApp:
                 if probabilidadOriginal is not None:
                         for margOriginal in probabilidadOriginal:
                             tabla_margOriginal.append(margOriginal)
+                
                             
                 #Calcular el producto tensorial de Kronecker para cada tensor en la lista
                 for i, tensor in enumerate(tabla_margOriginal):
@@ -310,17 +312,13 @@ class EjecutarApp:
                         producto_tensorial = np.kron(producto_tensorial, tensor)
                         
                 tensorOriginal = producto_tensorial.copy()
+                aristasEliminadas = []
                 
-                st.title("Tensor original")
-                st.write(presenteOriginal)
-                st.write(futuroOriginal)
-                st.write(probabilidadOriginal)
-                st.write(tensorOriginal)
+                copyEdges = st.session_state.grafo["edges"][:]
                 
-                st.title("Aristas")
-                
-                
-                for edge in st.session_state.grafo["edges"]:
+                for edge in copyEdges:
+                    
+                    
                     presenteId = edge.source
                     futuroId = edge.to
                     
@@ -340,7 +338,6 @@ class EjecutarApp:
                     for marg in probabilidad:
                         tabla_marg.append(marg)
                         
-                        
                     probabilidadSinDestino = self.generar_probabilidad(futuroSinDestino, presenteOriginal,
                                                              estadosString,json_data)   
                     for marg in probabilidadSinDestino:
@@ -357,33 +354,27 @@ class EjecutarApp:
                     emd_distance = wasserstein_distance(np.arange(tensor.size), np.arange(tensorOriginal.size),
                                                         u_weights=tensor, v_weights=tensorOriginal)
                     
-                    st.write("PresenteId: ",presenteId)
-                    st.write("FuturoId: ",futuroId)
-                    st.write("Presente: ",presente)
-                    st.write("Futuro: ",futuro)
+                    edge.label = emd_distance
                     
-                    st.write(tabla_marg)
-                    tensores_concatenados = np.vstack((tensor, tensorOriginal))
-                    df_tensores  = pd.DataFrame(tensores_concatenados)
-                    st.markdown("<div class='subtitle'>Tensor correspondiente vs Tensor original:</div>", 
-                        unsafe_allow_html=True)
-                    st.text(df_tensores.to_string(index=False, header=False))
-                    st.write(f"Pérdida total: {emd_distance:.2f}")
-                    st.write("--------------------------------")
+                    #st.write(tensor)
+                    #st.write(tensorOriginal)
+                    
+                    #st.write("Origen: ",edge.source," Destino: ",edge.to, 
+                    #                       " Pérdida: ", edge.label)
+                    #st.write("--------------------------------------------------------")
                     
                     if emd_distance == 0:
-                        for edge in st.session_state.grafo["edges"]:
-                            if edge.source == presenteId and edge.to == futuroId:
-                                st.session_state.grafo["edges"].remove(edge)
+                        aristasEliminadas.append(copy.deepcopy(edge))
+                        st.session_state.grafo["edges"].remove(edge)
+                        componentes = []        
                         componentes = self.obtenerComponentesConexas()
                         if len(componentes) > 1:
-                            st.write("Se encontró una partición en el grafo")
-                            st.session_state.grafo = copy.deepcopy(st.session_state.grafo_temporal)
+                            self.finEstrategia2(aristasEliminadas)
+                            aristasEliminadas = []
                             return
-                    else:
-                        edge.label = emd_distance
-                    
-                componentes = 1  
+                       
+                componentes = [] 
+                
                 while len(componentes) <= 1:
                     min_valor = float('inf')  # Inicializar el mínimo con un valor alto
                     edge_con_min_valor = None  # Inicializar el borde con el valor mínimo como None
@@ -394,71 +385,39 @@ class EjecutarApp:
                             min_valor = edge.label
                             edge_con_min_valor = edge
                             
+                            
+                    aristasEliminadas.append(copy.deepcopy(edge_con_min_valor))        
                     st.session_state.grafo["edges"].remove(edge_con_min_valor)
-                    componentes = self.obtenerComponentesConexas()
-                
-                st.session_state.grafo = copy.deepcopy(st.session_state.grafo_temporal)
+                    componentes = self.obtenerComponentesConexas() 
+                     
+                self.finEstrategia2(aristasEliminadas)
+                aristasEliminadas = []
                 return
-            
-                
-                #Para obtener el valor de una arista
-                # el nodo origen de la arista, se quita de los nodos presente
-                #presente = "AC"
-                #presente = "ABC" -> Original son todos los nodos presente !!No lo ingresa el usuario
-                #Al borrar la arista, presente = "AC", tomando en cuenta que el nodo origen era "B"
-                
-                #futuro = "A'B'C'" -> Original todos los nodos que tengan '
-                #futuro = "A'" -> Nodo destino edge.to de la arista eliminada
-                
-                #Se hace la marginalizacion para el nodo futuro de la arista eliminada
-                #Se llama a la funcion obtenerProbabilidad de futuro = "A'"
-                
-                #Luego producto tensor entre esa marginalizacion del paso anterior 
-                    # y los demas futuros sin marginalizar
-                #Esto significa que no se le quitan futuros ni presentes 
-                    #pero si se le debe mandar un estado inicial
-                
-                ##Dicha marg se hace producto tensor con las otras probabilidades sin marginalizar
 
-                
-                
-                #Tomamos aristas del grafo
-                #Eliminamos arista por arista verificando si vale 0 se borra:
-                
-                ##Borrar arista del grafo original
-                ##El valor se almacena en el label de las aristas
-                
-                #Se verifica si hay particion en el grafo original sin la arista
-                componentes = self.obtenerComponentesConexas()
-                
-                #si componentes es mayor a 1, hay partición
-                if len(componentes) > 1:
-                    ##SE ACABA LA ESTRATEGIA Y SE DEVUELVE EL GRAFO A SU ESTADO ORIGINAL
-                    #st.session_state.grafo = copy.deepcopy(st.session_state.grafo_temporal)
-                    return
-                
-                #Si no hay particion volvemos al for y borra otra. Hasta que borra todas
-                #Se sale del ciclo
-                
-                #ListaLabelAristas = []
-                #ListaLabelAristas= [edge.label for edge in st.session_state.grafo["edges"])]
-                
-                
-                #while componentes <=1
-                #Busca la arista mas baja y la borra
-                
-                #aristaMenorPerdida =  min(ListaLabelAristas)
-                #ListaLabelAristas.remove(aristaMenorPerdida) CREO QUE ES ASI
-                
-                #Se verifica si hay particion en el grafo original sin la arista
-                componentes = self.obtenerComponentesConexas()
-                
-                #Sale del while
-                
-                
-                ##SE ACABA LA ESTRATEGIA Y SE DEVUELVE EL GRAFO A SU ESTADO ORIGINAL
-                #st.session_state.grafo = copy.deepcopy(st.session_state.grafo_temporal)
-                return
+    def finEstrategia2(self,aristasEliminadas):
+        st.title("Se encontró una partición en el grafo")
+        #SE VUELVE STRING PARA LA VISUALIZACION EL EMD
+        for edge in st.session_state.grafo["edges"]:
+            edge.label = str(edge.label)
+        agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+                st.session_state.grafo["config"])
+        
+        st.subheader("Se eliminaron las siguientes aristas")
+        
+        for aristaElim in aristasEliminadas:
+            origen = ""
+            destino = ""
+            for node in st.session_state.grafo["nodes"]:
+                        if node.id == aristaElim.source:
+                            origen = node.label
+                        if node.id == aristaElim.to:
+                            destino = node.label
+            
+            st.write("Origen: ",origen," - Destino: ",destino, 
+                        " - Pérdida: ", aristaElim.label)
+        
+        st.session_state.grafo = copy.deepcopy(st.session_state.grafo_temporal)
+        return
 
             
     def generar_probabilidad(self,futuro,presente, estadosString, json_data):
