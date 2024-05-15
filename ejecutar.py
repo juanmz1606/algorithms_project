@@ -57,9 +57,6 @@ class EjecutarApp:
                         # Guardar el grafo de la componente en el estado de la sesión
                         st.session_state.componentes_conexas.append((selected_nodes, selected_edges, config))
                         
-                        #(("A'",), ('A', "B'", 'C', "C'"))
-
-                        
                     # Verificar si se ha seleccionado una componente y mostrarla
                     if hasattr(st.session_state, 'componentes_conexas'):
                         component_names = [f"Componente {i+1}" for i in range(len(st.session_state.componentes_conexas))]
@@ -263,7 +260,6 @@ class EjecutarApp:
             
             
     def estrategia2(self):
-        #https://jamboard.google.com/d/1vw3ZecpkP_Gx9WsIwfEt9OCf4LmykMSKxRGr6w389D0/viewer?mtt=hnt54sky4247&f=3
         if st.session_state.grafo["nodes"] is None:
             st.sidebar.warning("No se tiene un grafo en la aplicación.")
             return
@@ -290,7 +286,6 @@ class EjecutarApp:
                 json_data = json.load(ruta_archivo)
                 
                 ##ORIGINAL
-                #A*B*C -> Producto tensor, entre cada futuro usando como inicial cada presente "100"
                 for node in st.session_state.grafo["nodes"]:
                     if "'" in node.label:
                         futuroOriginal += node.label
@@ -381,7 +376,7 @@ class EjecutarApp:
 
                     # Iterar sobre los bordes y encontrar el mínimo valor de edge.label
                     for edge in st.session_state.grafo["edges"]:
-                        if edge.label < min_valor:  # Verificar si la etiqueta del borde existe y es menor que el mínimo actual
+                        if edge.label < min_valor:  # Verificar si es menor que el mínimo actual
                             min_valor = edge.label
                             edge_con_min_valor = edge
                             
@@ -395,7 +390,7 @@ class EjecutarApp:
                 return
 
     def finEstrategia2(self,aristasEliminadas):
-        st.title("Se encontró una partición en el grafo")
+        st.subheader("Se encontró una partición en el grafo")
         #SE VUELVE STRING PARA LA VISUALIZACION EL EMD
         for edge in st.session_state.grafo["edges"]:
             edge.label = str(edge.label)
