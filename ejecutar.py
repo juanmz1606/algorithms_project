@@ -6,6 +6,7 @@ import json
 from scipy.stats import wasserstein_distance
 import pandas as pd
 import copy
+from time import time
 
 class EjecutarApp:
     def __init__(self):
@@ -86,6 +87,7 @@ class EjecutarApp:
         ruta_archivo = st.sidebar.file_uploader("Selecciona un archivo JSON", type=["json"])
         
         if ruta_archivo is not None:
+            start_time = time()  # Marca el inicio del tiempo
             json_data = json.load(ruta_archivo)
         
             # Separar los valores usando el caracter de comillas como delimitador
@@ -180,7 +182,7 @@ class EjecutarApp:
                         producto_tensorial = np.kron(producto_tensorial, tensor)
                 tensores.append(producto_tensorial.copy())
                 
-                st.write(combinacion)
+                #st.write(combinacion)
                 #st.write(tabla_marg)
                 #st.write(producto_tensorial)
             
@@ -257,6 +259,10 @@ class EjecutarApp:
 
             st.markdown("<div class='subtitle'>Total de pérdida del sistema con el corte:</div>", unsafe_allow_html=True)
             st.write(f"Pérdida total: {menor_perdida:.2f}")
+            
+            end_time = time()  # Marca el final del tiempo
+            total_time = end_time - start_time  # Calcula el tiempo total
+            st.write(f"Tiempo total de ejecución: {total_time:.2f} segundos")
             
             
     def estrategia2(self):
