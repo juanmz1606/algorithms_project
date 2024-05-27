@@ -289,6 +289,8 @@ class EjecutarApp:
             
             if ruta_archivo is not None:
                 
+                start_time = time()  # Marca el inicio del tiempo
+                
                 json_data = json.load(ruta_archivo)
                 
                 ##ORIGINAL
@@ -357,12 +359,19 @@ class EjecutarApp:
                     
                     edge.label = emd_distance
                     
-                    #st.write(tensor)
-                    #st.write(tensorOriginal)
+                    # Suponiendo que 'tensor_menor_perdida' y 'tensorOriginal' son arrays de numpy
+                    tensor = np.array(tensor)
+                    tensorOriginal = np.array(tensorOriginal)
                     
-                    #st.write("Origen: ",edge.source," Destino: ",edge.to, 
-                    #                       " Pérdida: ", edge.label)
-                    #st.write("--------------------------------------------------------")
+                    tensores_concatenados = np.vstack((tensor, tensorOriginal))
+                    
+                    df_tensores  = pd.DataFrame(tensores_concatenados)
+                    
+                    st.text(df_tensores.to_string(index=False, header=False))
+                    
+                    st.write("Origen: ",edge.source," Destino: ",edge.to, 
+                                           " Pérdida: ", edge.label)
+                    st.write("--------------------------------------------------------")
                     
                     if emd_distance == 0:
                         aristasEliminadas.append(copy.deepcopy(edge))
@@ -390,12 +399,16 @@ class EjecutarApp:
                     aristasEliminadas.append(copy.deepcopy(edge_con_min_valor))        
                     st.session_state.grafo["edges"].remove(edge_con_min_valor)
                     componentes = self.obtenerComponentesConexas() 
-                     
-                self.finEstrategia2(aristasEliminadas)
+                 
+                end_time = time()  # Marca el final del tiempo
+                total_time = end_time - start_time  # Calcula el tiempo total    
+                self.finEstrategia2(aristasEliminadas,total_time)
                 aristasEliminadas = []
+                
+                
                 return
 
-    def finEstrategia2(self,aristasEliminadas):
+    def finEstrategia2(self,aristasEliminadas, total_time):
         st.subheader("Se encontró una partición en el grafo")
         #SE VUELVE STRING PARA LA VISUALIZACION EL EMD
         for edge in st.session_state.grafo["edges"]:
@@ -416,6 +429,8 @@ class EjecutarApp:
             
             st.write("Origen: ",origen," - Destino: ",destino, 
                         " - Pérdida: ", aristaElim.label)
+            
+        st.write(f"Tiempo total de ejecución: {total_time:.2f} segundos")
         
         st.session_state.grafo = copy.deepcopy(st.session_state.grafo_temporal)
         return
@@ -466,8 +481,9 @@ class EjecutarApp:
     def obtenerComponentesConexas(self):
         nodes = {node.id: [] for node in st.session_state.grafo["nodes"]}
         for edge in st.session_state.grafo["edges"]:
-            nodes[edge.source].append(edge.to)
-            nodes[edge.to].append(edge.source)
+            if edge.source in nodes and edge.to in nodes:
+                nodes[edge.source].append(edge.to)
+                nodes[edge.to].append(edge.source)
 
         visited = set()
         components = []
@@ -488,8 +504,9 @@ class EjecutarApp:
     def isBipartito(self):
         nodes = {node.id: [] for node in st.session_state.grafo["nodes"]}
         for edge in st.session_state.grafo["edges"]:
-            nodes[edge.source].append(edge.to)
-            nodes[edge.to].append(edge.source)
+            if edge.source in nodes and edge.to in nodes:
+                nodes[edge.source].append(edge.to)
+                nodes[edge.to].append(edge.source)
 
         # Algoritmo de BFS para verificar si el grafo es bipartito
         
