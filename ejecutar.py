@@ -379,7 +379,9 @@ class EjecutarApp:
                         componentes = []        
                         componentes = self.obtenerComponentesConexas()
                         if len(componentes) > 1:
-                            self.finEstrategia2(aristasEliminadas)
+                            end_time = time()  # Marca el final del tiempo
+                            total_time = end_time - start_time  # Calcula el tiempo total 
+                            self.finEstrategia2(aristasEliminadas,total_time)
                             aristasEliminadas = []
                             return
                        
