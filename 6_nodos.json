@@ -1,0 +1,306 @@
+{
+  "graph": [
+    {
+      "name": "G",
+      "data": [
+        {
+          "id": 1,
+          "label": "A",
+          "data": {},
+          "type": " ",
+          "linkedTo": [
+            {
+              "nodeId": 7,
+              "weight": 1
+            },
+            {
+              "nodeId": 8,
+              "weight": 1
+            },
+            {
+              "nodeId": 9,
+              "weight": 1
+            },
+            {
+              "nodeId": 10,
+              "weight": 1
+            },
+            {
+              "nodeId": 11,
+              "weight": 1
+            },
+            {
+              "nodeId": 12,
+              "weight": 1
+            }
+          ],
+          "radius": 25.0,
+          "coordenates": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": 2,
+          "label": "B",
+          "data": {},
+          "type": " ",
+          "linkedTo": [
+            {
+              "nodeId": 7,
+              "weight": 1
+            },
+            {
+              "nodeId": 8,
+              "weight": 1
+            },
+            {
+              "nodeId": 9,
+              "weight": 1
+            },
+            {
+              "nodeId": 10,
+              "weight": 1
+            },
+            {
+              "nodeId": 11,
+              "weight": 1
+            },
+            {
+              "nodeId": 12,
+              "weight": 1
+            }
+          ],
+          "radius": 25.0,
+          "coordenates": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": 3,
+          "label": "C",
+          "data": {},
+          "type": " ",
+          "linkedTo": [
+            {
+              "nodeId": 7,
+              "weight": 1
+            },
+            {
+              "nodeId": 8,
+              "weight": 1
+            },
+            {
+              "nodeId": 9,
+              "weight": 1
+            },
+            {
+              "nodeId": 10,
+              "weight": 1
+            },
+            {
+              "nodeId": 11,
+              "weight": 1
+            },
+            {
+              "nodeId": 12,
+              "weight": 1
+            }
+          ],
+          "radius": 25.0,
+          "coordenates": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": 4,
+          "label": "D",
+          "data": {},
+          "type": " ",
+          "linkedTo": [
+            {
+              "nodeId": 7,
+              "weight": 1
+            },
+            {
+              "nodeId": 8,
+              "weight": 1
+            },
+            {
+              "nodeId": 9,
+              "weight": 1
+            },
+            {
+              "nodeId": 10,
+              "weight": 1
+            },
+            {
+              "nodeId": 11,
+              "weight": 1
+            },
+            {
+              "nodeId": 12,
+              "weight": 1
+            }
+          ],
+          "radius": 25.0,
+          "coordenates": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": 5,
+          "label": "E",
+          "data": {},
+          "type": " ",
+          "linkedTo": [
+            {
+              "nodeId": 7,
+              "weight": 1
+            },
+            {
+              "nodeId": 8,
+              "weight": 1
+            },
+            {
+              "nodeId": 9,
+              "weight": 1
+            },
+            {
+              "nodeId": 10,
+              "weight": 1
+            },
+            {
+              "nodeId": 11,
+              "weight": 1
+            },
+            {
+              "nodeId": 12,
+              "weight": 1
+            }
+          ],
+          "radius": 25.0,
+          "coordenates": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": 6,
+          "label": "F",
+          "data": {},
+          "type": " ",
+          "linkedTo": [
+            {
+              "nodeId": 7,
+              "weight": 0
+            },
+            {
+              "nodeId": 8,
+              "weight": 1
+            },
+            {
+              "nodeId": 9,
+              "weight": 1
+            },
+            {
+              "nodeId": 10,
+              "weight": 1
+            },
+            {
+              "nodeId": 11,
+              "weight": 1
+            },
+            {
+              "nodeId": 12,
+              "weight": 1
+            }
+          ],
+          "radius": 25.0,
+          "coordenates": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": 7,
+          "label": "A'",
+          "data": {},
+          "type": " ",
+          "linkedTo": [],
+          "radius": 25.0,
+          "coordenates": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": 8,
+          "label": "B'",
+          "data": {},
+          "type": " ",
+          "linkedTo": [],
+          "radius": 25.0,
+          "coordenates": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": 9,
+          "label": "C'",
+          "data": {},
+          "type": " ",
+          "linkedTo": [],
+          "radius": 25.0,
+          "coordenates": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": 10,
+          "label": "D'",
+          "data": {},
+          "type": " ",
+          "linkedTo": [],
+          "radius": 25.0,
+          "coordenates": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": 11,
+          "label": "E'",
+          "data": {},
+          "type": " ",
+          "linkedTo": [],
+          "radius": 25.0,
+          "coordenates": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": 12,
+          "label": "F'",
+          "data": {},
+          "type": " ",
+          "linkedTo": [],
+          "radius": 25.0,
+          "coordenates": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      ]
+    }
+  ],
+  "generalData1": 100,
+  "generalData2": "Alg",
+  "generalData3": 300
+}
