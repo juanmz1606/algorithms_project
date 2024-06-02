@@ -7,6 +7,7 @@ from scipy.stats import wasserstein_distance
 import pandas as pd
 import copy
 from time import time
+import string
 
 class EjecutarApp:
     def __init__(self):
@@ -133,9 +134,10 @@ class EjecutarApp:
                     
             tensorOriginal = producto_tensorial.copy()
             
-            #st.write("Tensor original")
-            #st.write(probabilidadOriginal)
-            #st.write(tensorOriginal)
+            st.write("Tensor original")
+            st.write(probabilidadOriginal)
+            st.write(tensorOriginal)
+            
             
             combinaciones = self.generar_combinaciones_subgrafos(nodes,edges)
             
@@ -145,7 +147,7 @@ class EjecutarApp:
                 futuro = ""
                 presente = ""
                 tabla_marg = []
-                for letra in combinacion[0]:
+                for letra in combinacion[1]:
                     if "'" in letra:
                         futuro += letra
                     else:
@@ -157,10 +159,11 @@ class EjecutarApp:
                     continue 
                 for marg in probabilidad:
                     tabla_marg.append(marg)
+                    #tabla_marg.insert(0,marg)
                     
                 futuro = ""
                 presente = ""
-                for letra in combinacion[1]: 
+                for letra in combinacion[0]: 
                     if "'" in letra:
                         
                         futuro += letra
@@ -173,6 +176,7 @@ class EjecutarApp:
                     continue 
                 for marg in probabilidad:
                     tabla_marg.append(marg)
+                    #tabla_marg.insert(0,marg)
         
                 # Calcular el producto tensorial de Kronecker para cada tensor en la lista
                 for i, tensor in enumerate(tabla_marg):
@@ -182,9 +186,9 @@ class EjecutarApp:
                         producto_tensorial = np.kron(producto_tensorial, tensor)
                 tensores.append(producto_tensorial.copy())
                 
-                #st.write(combinacion)
-                #st.write(tabla_marg)
-                #st.write(producto_tensorial)
+                st.write(combinacion)
+                st.write(tabla_marg)
+                st.write(producto_tensorial)
             
             # Calcular la distancia de Wasserstein (EMD) entre cada tensor y el tensor original
             lista_emd = []
@@ -440,6 +444,7 @@ class EjecutarApp:
             
     def generar_probabilidad(self,futuro,presente, estadosString, json_data):
         estados = [int(estado) for estado in estadosString]
+        #alfabeto = string.ascii_lowercase
         
         # Separar los valores usando el caracter de comillas como delimitador
         valores_futuros_lista = futuro.split("'")
@@ -450,8 +455,8 @@ class EjecutarApp:
         # Agregar comillas simples alrededor de cada letra
         futuro = [f"{valor}'" for valor in valores_futuros_lista]
         
-        if not futuro:
-            return None
+        #if not futuro:
+        #    return None
         
         for dato in json_data:
             st.session_state.tablas_prob[dato["nombre"]] = dato["probabilidades"]
@@ -471,14 +476,19 @@ class EjecutarApp:
         if presente == '':
             
             for tabla_name in futuro:
+                #tabla_name_sin_comilla = tabla_name.replace("'", "")
+                #posicion = alfabeto.index(tabla_name_sin_comilla.lower())
                 tabla_marg.append(self.vacio(tabla_name))
         
         else:
             # Iterar sobre cada tabla_name en futuro y llamar a marginalizar
             for tabla_name in futuro:
+                #tabla_name_sin_comilla = tabla_name.replace("'", "")
+                #posicion = alfabeto.index(tabla_name_sin_comilla.lower())
                 tabla_marg.append(self.marginalizar(tabla_name, presente, estadoInicial))
-            
+                
         return tabla_marg
+
 
     def obtenerComponentesConexas(self):
         nodes = {node.id: [] for node in st.session_state.grafo["nodes"]}
