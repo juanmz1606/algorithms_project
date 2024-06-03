@@ -126,7 +126,8 @@ class EjecutarApp:
                         tabla_margOriginal.append(margOriginal)
                         
             #Calcular el producto tensorial de Kronecker para cada tensor en la lista
-            for i, tensor in enumerate(tabla_margOriginal):
+            for i, diccionario in enumerate(tabla_margOriginal):
+                tensor = np.array(diccionario["calculos"])
                 if i == 0:
                     producto_tensorial = tensor
                 else:
@@ -138,12 +139,12 @@ class EjecutarApp:
             st.write(probabilidadOriginal)
             st.write(tensorOriginal)
             
-            
-            combinaciones = self.generar_combinaciones_subgrafos(nodes,edges)
+            combinaciones = []
+            combinaTotales = self.generar_combinaciones_subgrafos(nodes,edges)
             
             tensores = []
             
-            for combinacion in combinaciones:
+            for combinacion in combinaTotales:
                 futuro = ""
                 presente = ""
                 tabla_marg = []
@@ -177,26 +178,33 @@ class EjecutarApp:
                 for marg in probabilidad:
                     tabla_marg.append(marg)
                     #tabla_marg.insert(0,marg)
+                    
+                tabla_marg_ordenada = sorted(tabla_marg, key=lambda x: x["letra"])
         
                 # Calcular el producto tensorial de Kronecker para cada tensor en la lista
-                for i, tensor in enumerate(tabla_marg):
+                for i, diccionario in enumerate(tabla_marg_ordenada):
+                    # Acceder a los cálculos almacenados en el diccionario
+                    tensor = np.array(diccionario["calculos"])
                     if i == 0:
                         producto_tensorial = tensor
                     else:
                         producto_tensorial = np.kron(producto_tensorial, tensor)
+                #st.write(f"Tensor: {producto_tensorial}")
+                # Añadir una copia del producto tensorial a la lista de tensores
                 tensores.append(producto_tensorial.copy())
-                
+                combinaciones.append(combinacion)
                 st.write(combinacion)
-                st.write(tabla_marg)
+                st.write(tabla_marg_ordenada)
                 st.write(producto_tensorial)
-            
             # Calcular la distancia de Wasserstein (EMD) entre cada tensor y el tensor original
             lista_emd = []
+            #st.write(tensores)
             for i, tensor in enumerate(tensores):
                 emd_distance = wasserstein_distance(np.arange(tensor.size), np.arange(tensorOriginal.size),
                                                     u_weights=tensor, v_weights=tensorOriginal)
                 lista_emd.append(emd_distance)
                 #st.write(f"Combinación: {combinaciones[i]}")
+                #st.write(f"Tensor: {tensor}")
                 #st.write(f"Distancia de Wasserstein (EMD) entre tensor y tensorOriginal: {emd_distance}")
 
             lista_emd = np.array(lista_emd)
@@ -208,7 +216,6 @@ class EjecutarApp:
             # La combinación correspondiente a la menor pérdida
             combinacion_menor_perdida = combinaciones[indice_menor_perdida]
             tensor_menor_perdida = tensores[indice_menor_perdida]
-            
             
             # Suponiendo que 'tensor_menor_perdida' y 'tensorOriginal' son arrays de numpy
             tensor_menor_perdida = np.array(tensor_menor_perdida)
@@ -443,8 +450,9 @@ class EjecutarApp:
 
             
     def generar_probabilidad(self,futuro,presente, estadosString, json_data):
+
         estados = [int(estado) for estado in estadosString]
-        #alfabeto = string.ascii_lowercase
+        
         
         # Separar los valores usando el caracter de comillas como delimitador
         valores_futuros_lista = futuro.split("'")
@@ -471,21 +479,40 @@ class EjecutarApp:
         for node in st.session_state.grafo["nodes"]:
             if node.id not in destinos:
                 variables += node.label
+        st.write(estados)
+        # Asegurarse de que las variables están en orden alfabético
+        variables = ''.join(sorted(variables))
+
+        # Crear un diccionario para mapear variables a sus estados
+        estadoInicial = {}
+        for var in variables:
+            if var in presente:
+                # Obtener la posición alfabética de la variable
+                posicion = variables.index(var)
+                # Asignar el estado basado en la posición
+                estadoInicial[var] = estados[posicion]
+            else:
+                estadoInicial[var] = None
+        st.write(estadoInicial)
         
-        estadoInicial = {var: (estados.pop(0) if var in presente else None) for var in variables}
+
         if presente == '':
             
             for tabla_name in futuro:
-                #tabla_name_sin_comilla = tabla_name.replace("'", "")
-                #posicion = alfabeto.index(tabla_name_sin_comilla.lower())
-                tabla_marg.append(self.vacio(tabla_name))
+                marg = {}
+                tabla_name_sin_comilla = tabla_name.replace("'", "")
+                marg["letra"] = tabla_name_sin_comilla
+                marg["calculos"] = self.vacio(tabla_name)
+                tabla_marg.append(marg)
         
         else:
             # Iterar sobre cada tabla_name en futuro y llamar a marginalizar
             for tabla_name in futuro:
-                #tabla_name_sin_comilla = tabla_name.replace("'", "")
-                #posicion = alfabeto.index(tabla_name_sin_comilla.lower())
-                tabla_marg.append(self.marginalizar(tabla_name, presente, estadoInicial))
+                marg = {}
+                tabla_name_sin_comilla = tabla_name.replace("'", "")
+                marg["letra"] = tabla_name_sin_comilla
+                marg["calculos"] = self.marginalizar(tabla_name, presente, estadoInicial)
+                tabla_marg.append(marg)
                 
         return tabla_marg
 
@@ -603,7 +630,6 @@ class EjecutarApp:
         suma_penultimos_valores = 0
         suma_ultimos_valores = 0
         contador_filas = 0  # Nueva variable para contar las filas
-
         for fila in tabla_original:
             condicion_cumplida = True
             for i in range(len(presente)):
