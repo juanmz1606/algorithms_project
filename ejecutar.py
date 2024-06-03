@@ -135,9 +135,9 @@ class EjecutarApp:
                     
             tensorOriginal = producto_tensorial.copy()
             
-            st.write("Tensor original")
-            st.write(probabilidadOriginal)
-            st.write(tensorOriginal)
+            #st.write("Tensor original")
+            #st.write(probabilidadOriginal)
+            #st.write(tensorOriginal)
             
             combinaciones = []
             combinaTotales = self.generar_combinaciones_subgrafos(nodes,edges)
@@ -193,9 +193,9 @@ class EjecutarApp:
                 # Añadir una copia del producto tensorial a la lista de tensores
                 tensores.append(producto_tensorial.copy())
                 combinaciones.append(combinacion)
-                st.write(combinacion)
-                st.write(tabla_marg_ordenada)
-                st.write(producto_tensorial)
+                #st.write(combinacion)
+                #st.write(tabla_marg_ordenada)
+                #st.write(producto_tensorial)
             # Calcular la distancia de Wasserstein (EMD) entre cada tensor y el tensor original
             lista_emd = []
             #st.write(tensores)
@@ -479,7 +479,7 @@ class EjecutarApp:
         for node in st.session_state.grafo["nodes"]:
             if node.id not in destinos:
                 variables += node.label
-        st.write(estados)
+        #st.write(estados)
         # Asegurarse de que las variables están en orden alfabético
         variables = ''.join(sorted(variables))
 
@@ -493,7 +493,7 @@ class EjecutarApp:
                 estadoInicial[var] = estados[posicion]
             else:
                 estadoInicial[var] = None
-        st.write(estadoInicial)
+        #st.write(estadoInicial)
         
 
         if presente == '':
