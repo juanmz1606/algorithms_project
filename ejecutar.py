@@ -277,22 +277,16 @@ class EjecutarApp:
             
             
     def estrategia2(self):
-        if st.session_state.grafo["nodes"] is None:
-            st.sidebar.warning("No se tiene un grafo en la aplicación.")
-            return
+        #if st.session_state.grafo["nodes"] is None:
+        #    st.sidebar.warning("No se tiene un grafo en la aplicación.")
+        #    return
         if self.isBipartito():
-            #Salvar el grafo original
-            st.session_state.grafo_temporal = copy.deepcopy(st.session_state.grafo)
             
-            config = Config(width=600, height=450, directed=True, physics=True, hierarchical=False)
-                
-            st.session_state.grafo = {"nodes":st.session_state.grafo["nodes"],
-                                      "edges":st.session_state.grafo["edges"],
-                                      "config": config}
-            
+            presenteUsuario = st.sidebar.text_input("Valores presentes")
+            futuroUsuarioString = st.sidebar.text_input("Valores futuros")
             estadosString = st.sidebar.text_input("Estado inicial")
-            futuroOriginal = ""
-            presenteOriginal = ""
+            #futuroOriginal = ""
+            #presenteOriginal = ""
             tabla_margOriginal = []
         
             # Pedir al usuario que ingrese la ruta del archivo
@@ -304,14 +298,51 @@ class EjecutarApp:
                 
                 json_data = json.load(ruta_archivo)
                 
+                valores_futuros_lista = futuroUsuarioString.split("'")
+
+                # Eliminar elementos vacíos y espacios adicionales
+                valores_futuros_lista = [valor.strip() for valor in valores_futuros_lista if valor.strip()]
+
+                # Agregar comillas simples alrededor de cada letra
+                futuroUsuario = [f"{valor}'" for valor in valores_futuros_lista]
+                
+                
+                
                 ##ORIGINAL
-                for node in st.session_state.grafo["nodes"]:
-                    if "'" in node.label:
-                        futuroOriginal += node.label
-                    else:
-                        presenteOriginal += node.label
+                #for node in st.session_state.grafo["nodes"]:
+                #    if "'" in node.label:
+                #        futuroOriginal += node.label
+                #    else:
+                #        presenteOriginal += node.label
+                
+                nodes = []
+                edges = []
+                i = 0
+                idOrigen = 0
+                
+                for letra in presenteUsuario:
+                        nodes.append(Node(id=i+1,label=letra))
+                        i += 1
+                        idOrigen += 1
+                for letra in futuroUsuario:
+                        nodes.append(Node(id=i+1,label=letra))
+                        i += 1
                         
-                probabilidadOriginal = self.generar_probabilidad(futuroOriginal, presenteOriginal,
+                for node in nodes:
+                    for node2 in nodes:
+                        if node.id <= idOrigen and node2.id > idOrigen:
+                            edges.append(Edge(source=node.id, target=node2.id, label="", color="#000000"))
+                            
+                #Salvar el grafo original
+                config = Config(width=600, height=450, directed=True, physics=True, hierarchical=False)
+                    
+                st.session_state.grafo = {"nodes":st.session_state.grafo["nodes"],
+                                        "edges":st.session_state.grafo["edges"],
+                                        "config": config}    
+                
+                st.session_state.grafo_temporal = copy.deepcopy(st.session_state.grafo)
+                   
+                probabilidadOriginal = self.generar_probabilidad(futuroUsuarioString, presenteUsuario,
                                                                     estadosString,json_data)
                 if probabilidadOriginal is not None:
                         for margOriginal in probabilidadOriginal:
@@ -319,7 +350,8 @@ class EjecutarApp:
                 
                             
                 #Calcular el producto tensorial de Kronecker para cada tensor en la lista
-                for i, tensor in enumerate(tabla_margOriginal):
+                for i, diccionario in enumerate(tabla_margOriginal):
+                    tensor = np.array(diccionario["calculos"])
                     if i == 0:
                         producto_tensorial = tensor
                     else:
@@ -331,20 +363,18 @@ class EjecutarApp:
                 copyEdges = st.session_state.grafo["edges"][:]
                 
                 for edge in copyEdges:
-                    
-                    
                     presenteId = edge.source
                     futuroId = edge.to
                     
                     for node in st.session_state.grafo["nodes"]:
                         if node.id == presenteId:
                             presente = node.label
-                            presente = presenteOriginal.replace(presente, "")
+                            presente = presenteUsuario.replace(presente, "")
                             
                     for node in st.session_state.grafo["nodes"]:
                         if node.id == futuroId:
                             futuro = node.label
-                            futuroSinDestino = futuroOriginal.replace(futuro, "")
+                            futuroSinDestino = futuroUsuarioString.replace(futuro, "")
                     
                     tabla_marg = []
                     
@@ -352,12 +382,15 @@ class EjecutarApp:
                     for marg in probabilidad:
                         tabla_marg.append(marg)
                         
-                    probabilidadSinDestino = self.generar_probabilidad(futuroSinDestino, presenteOriginal,
+                    probabilidadSinDestino = self.generar_probabilidad(futuroSinDestino, presenteUsuario,
                                                              estadosString,json_data)   
                     for marg in probabilidadSinDestino:
                         tabla_marg.append(marg) 
+                    
+                    tabla_marg_ordenada = sorted(tabla_marg, key=lambda x: x["letra"])
                         
-                    for i, tensor in enumerate(tabla_marg):
+                    for i, diccionario in enumerate(tabla_marg_ordenada):
+                        tensor = np.array(diccionario["calculos"])
                         if i == 0:
                             producto_tensorial = tensor
                         else:
@@ -373,6 +406,11 @@ class EjecutarApp:
                     # Suponiendo que 'tensor_menor_perdida' y 'tensorOriginal' son arrays de numpy
                     tensor = np.array(tensor)
                     tensorOriginal = np.array(tensorOriginal)
+                    
+                    # Asegurarse de que las dimensiones coinciden para la concatenación
+                    if tensor.shape != tensorOriginal.shape:
+                        # Redimensionar 'tensor' para que coincida con 'tensorOriginal'
+                        tensor = np.resize(tensor, tensorOriginal.shape)
                     
                     tensores_concatenados = np.vstack((tensor, tensorOriginal))
                     
@@ -417,8 +455,6 @@ class EjecutarApp:
                 total_time = end_time - start_time  # Calcula el tiempo total    
                 self.finEstrategia2(aristasEliminadas,total_time)
                 aristasEliminadas = []
-                
-                
                 return
 
     def finEstrategia2(self,aristasEliminadas, total_time):
