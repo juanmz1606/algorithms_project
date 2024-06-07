@@ -7,7 +7,6 @@ from scipy.stats import wasserstein_distance
 import pandas as pd
 import copy
 from time import time
-import string
 
 class EjecutarApp:
     def __init__(self):
@@ -321,11 +320,11 @@ class EjecutarApp:
                 idOrigen = 0
                 
                 for letra in presenteUsuario:
-                        nodes.append(Node(id=i+1,label=letra))
+                        nodes.append(Node(id=i+1,size=float(10),label=letra,shape="circle"))
                         i += 1
                         idOrigen += 1
                 for letra in futuroUsuario:
-                        nodes.append(Node(id=i+1,label=letra))
+                        nodes.append(Node(id=i+1,size=float(10),label=letra,shape="circle"))
                         i += 1
                         
                 for node in nodes:
@@ -336,8 +335,8 @@ class EjecutarApp:
                 #Salvar el grafo original
                 config = Config(width=600, height=450, directed=True, physics=True, hierarchical=False)
                     
-                st.session_state.grafo = {"nodes":st.session_state.grafo["nodes"],
-                                        "edges":st.session_state.grafo["edges"],
+                st.session_state.grafo = {"nodes":nodes,
+                                        "edges":edges,
                                         "config": config}    
                 
                 st.session_state.grafo_temporal = copy.deepcopy(st.session_state.grafo)
@@ -358,6 +357,8 @@ class EjecutarApp:
                         producto_tensorial = np.kron(producto_tensorial, tensor)
                         
                 tensorOriginal = producto_tensorial.copy()
+                
+                
                 aristasEliminadas = []
                 
                 copyEdges = st.session_state.grafo["edges"][:]
@@ -416,11 +417,11 @@ class EjecutarApp:
                     
                     df_tensores  = pd.DataFrame(tensores_concatenados)
                     
-                    st.text(df_tensores.to_string(index=False, header=False))
+                    #st.text(df_tensores.to_string(index=False, header=False))
                     
-                    st.write("Origen: ",edge.source," Destino: ",edge.to, 
-                                           " Pérdida: ", edge.label)
-                    st.write("--------------------------------------------------------")
+                    #st.write("Origen: ",edge.source," Destino: ",edge.to, 
+                    #                      " Pérdida: ", edge.label)
+                    #st.write("--------------------------------------------------------")
                     
                     if emd_distance == 0:
                         aristasEliminadas.append(copy.deepcopy(edge))
@@ -428,6 +429,10 @@ class EjecutarApp:
                         componentes = []        
                         componentes = self.obtenerComponentesConexas()
                         if len(componentes) > 1:
+                            for node_id in componentes[1]:
+                                for node in st.session_state.grafo["nodes"]:
+                                    if node.id == node_id:
+                                        node.color = "#FF0000"  # Cambiar el color del nodo
                             end_time = time()  # Marca el final del tiempo
                             total_time = end_time - start_time  # Calcula el tiempo total 
                             self.finEstrategia2(aristasEliminadas,total_time)
@@ -445,11 +450,16 @@ class EjecutarApp:
                         if edge.label < min_valor:  # Verificar si es menor que el mínimo actual
                             min_valor = edge.label
                             edge_con_min_valor = edge
-                            
-                            
+    
                     aristasEliminadas.append(copy.deepcopy(edge_con_min_valor))        
                     st.session_state.grafo["edges"].remove(edge_con_min_valor)
                     componentes = self.obtenerComponentesConexas() 
+                
+                
+                for node_id in componentes[1]:
+                    for node in st.session_state.grafo["nodes"]:
+                        if node.id == node_id:
+                            node.color = "#FF0000"  # Cambiar el color del nodo
                  
                 end_time = time()  # Marca el final del tiempo
                 total_time = end_time - start_time  # Calcula el tiempo total    
@@ -458,12 +468,11 @@ class EjecutarApp:
                 return
 
     def finEstrategia2(self,aristasEliminadas, total_time):
-        st.subheader("Se encontró una partición en el grafo")
+        totalPerdida = 0
+        
         #SE VUELVE STRING PARA LA VISUALIZACION EL EMD
         for edge in st.session_state.grafo["edges"]:
             edge.label = str(edge.label)
-        agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
-                st.session_state.grafo["config"])
         
         st.subheader("Se eliminaron las siguientes aristas")
         
@@ -475,10 +484,21 @@ class EjecutarApp:
                             origen = node.label
                         if node.id == aristaElim.to:
                             destino = node.label
+                            
+            totalPerdida = totalPerdida + float(aristaElim.label)
+            aristaElim.dashes = True
+            aristaElim.label = str(aristaElim.label)
+            aristaElim.color = "#FF0000"
+            st.session_state.grafo["edges"].append(aristaElim)
             
             st.write("Origen: ",origen," - Destino: ",destino, 
                         " - Pérdida: ", aristaElim.label)
             
+        st.subheader("Se encontró una partición en el grafo")
+        agraph(st.session_state.grafo["nodes"], st.session_state.grafo["edges"],
+                st.session_state.grafo["config"])
+        
+        st.write(f"La perdida total en el corte es de: {totalPerdida}")    
         st.write(f"Tiempo total de ejecución: {total_time:.2f} segundos")
         
         st.session_state.grafo = copy.deepcopy(st.session_state.grafo_temporal)

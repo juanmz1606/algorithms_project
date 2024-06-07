@@ -3,7 +3,6 @@ from streamlit_agraph import agraph, Node, Edge, Config
 import pandas as pd
 import numpy as np
 import networkx as nx
-import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
 class VentanaApp:
