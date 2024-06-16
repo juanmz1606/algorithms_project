@@ -4,6 +4,7 @@ from editar import EditarApp
 from ventana import VentanaApp
 from ayuda import AyudaApp
 from ejecutar import EjecutarApp
+from analisis import AnalisisApp
 
 
 class GraphApp:
@@ -32,7 +33,7 @@ class GraphApp:
 
         # Definir la disposición de la página
         st.sidebar.title("Menú Principal")
-        opciones = ["Archivo", "Editar", "Ejecutar", "Herramientas", "Ventana", "Ayuda"]
+        opciones = ["Archivo", "Editar", "Ejecutar", "Herramientas", "Ventana", "Ayuda", "Analisis"]
         seleccion = st.sidebar.selectbox("Selecciona una opción", opciones)
 
         if seleccion == "Archivo":
@@ -52,6 +53,9 @@ class GraphApp:
         elif seleccion == "Ayuda":
             ayuda_app = AyudaApp()
             ayuda_app.menu() 
+        elif seleccion == "Analisis":
+            analisis_app = AnalisisApp()
+            analisis_app.menu()
                 
     def herramientas(self):
         st.header("Página de herramientas")
