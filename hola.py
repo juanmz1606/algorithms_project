@@ -5,7 +5,7 @@ def leer_datos_archivo(filename):
             line = line.strip().strip('[],')
             line = line.replace(' ', '')  # Eliminar todos los espacios en blanco
             if line:  # Asegurarse de que la línea no esté vacía después del procesamiento
-                datos.append([int(x) for x in line.split(',')])
+                datos.append([float(x) for x in line.split(',')])  # Convertir a flotantes
     return datos
 
 def generar_combinaciones_alternadas(n):
@@ -25,7 +25,9 @@ combinaciones = generar_combinaciones_alternadas(8)
 # Crear la estructura completa con los datos del archivo
 estructura_final = []
 for comb, dato in zip(combinaciones, datos):
-    estructura_final.append([comb, dato[1], 1-dato[0]])  # Usar el valor correspondiente del archivo
+    # Convertir los valores flotantes a enteros
+    valor = int(dato[7])
+    estructura_final.append([comb, valor, 1 - valor])
 
 # Mostrar la estructura final obtenida
 for lista in estructura_final:
