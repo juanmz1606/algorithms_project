@@ -8,15 +8,19 @@ def leer_datos_archivo(filename):
                 datos.append([int(x) for x in line.split(',')])
     return datos
 
-def generar_combinaciones(n):
-    from itertools import product
-    return list(product([0, 1], repeat=n))
+def generar_combinaciones_alternadas(n):
+    combinaciones = []
+    for i in range(2 ** n):
+        bin_str = format(i, f'0{n}b')
+        alternada = [int(bin_str[-j-1]) for j in range(n)]  # Invertir el orden de los bits
+        combinaciones.append(tuple(alternada))
+    return combinaciones
 
 # Leer los datos del archivo
 datos = leer_datos_archivo('datos.txt')
 
-# Generar las combinaciones para 8 nodos
-combinaciones = generar_combinaciones(8)
+# Generar las combinaciones alternadas para 8 nodos
+combinaciones = generar_combinaciones_alternadas(8)
 
 # Crear la estructura completa con los datos del archivo
 estructura_final = []
@@ -25,4 +29,4 @@ for comb, dato in zip(combinaciones, datos):
 
 # Mostrar la estructura final obtenida
 for lista in estructura_final:
-    print(lista)
+    print(lista, end=",\n")
