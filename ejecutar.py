@@ -272,7 +272,14 @@ class EjecutarApp:
             
             end_time = time()  # Marca el final del tiempo
             total_time = end_time - start_time  # Calcula el tiempo total
-            st.write(f"Tiempo total de ejecución: {total_time:.2f} segundos")
+            st.write(f"Tiempo total de ejecución: {total_time:.2f} segundos")         
+            
+            st.session_state.estrategia1["estadoInicial"] = estadosString
+            st.session_state.estrategia1["valPresente"] = presenteUsuario
+            st.session_state.estrategia1["valFuturo"] = futuroUsuarioString
+            st.session_state.estrategia1["valPerdida"] = menor_perdida
+            st.session_state.estrategia1["tiempo"] = total_time
+    
             
             
     def estrategia2(self):
@@ -284,6 +291,10 @@ class EjecutarApp:
             presenteUsuario = st.sidebar.text_input("Valores presentes")
             futuroUsuarioString = st.sidebar.text_input("Valores futuros")
             estadosString = st.sidebar.text_input("Estado inicial")
+            
+            st.session_state.estrategia2["estadoInicial"] = estadosString
+            st.session_state.estrategia2["valPresente"] = presenteUsuario
+            st.session_state.estrategia2["valFuturo"] = futuroUsuarioString
             #futuroOriginal = ""
             #presenteOriginal = ""
             tabla_margOriginal = []
@@ -465,6 +476,7 @@ class EjecutarApp:
                 total_time = end_time - start_time  # Calcula el tiempo total    
                 self.finEstrategia2(aristasEliminadas,total_time)
                 aristasEliminadas = []
+                
                 return
 
     def finEstrategia2(self,aristasEliminadas, total_time):
@@ -500,6 +512,9 @@ class EjecutarApp:
         
         st.write(f"La perdida total en el corte es de: {totalPerdida}")    
         st.write(f"Tiempo total de ejecución: {total_time:.2f} segundos")
+        
+        st.session_state.estrategia2["valPerdida"] = totalPerdida
+        st.session_state.estrategia2["tiempo"] = total_time
         
         st.session_state.grafo = copy.deepcopy(st.session_state.grafo_temporal)
         return

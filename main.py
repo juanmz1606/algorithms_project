@@ -26,6 +26,13 @@ class GraphApp:
             
         if 'grafo_temporal' not in st.session_state:
             st.session_state.grafo_temporal = {}
+            
+        if 'estrategia1' not in st.session_state:
+            st.session_state.estrategia1 = {"estadoInicial": None, "valPresente": None, "valFuturo":None,
+                                            "valPerdida":None,"tiempo": None}
+        if 'estrategia2' not in st.session_state:
+            st.session_state.estrategia2 = {"estadoInicial": None, "valPresente": None, "valFuturo":None,
+                                            "valPerdida":None,"tiempo": None}
 
     def menu_principal(self):
         # Restaurar o inicializar el estado de la sesión
