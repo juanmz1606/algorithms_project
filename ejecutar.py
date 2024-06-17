@@ -15,7 +15,7 @@ class EjecutarApp:
     def menu(self):
         submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
                                               ["Bipartito", "Componentes conexas",
-                                              "Estrategia 1","Estrategia 2"])
+                                              "Estrategia 1","Estrategia 2","Sustentacion Parcial"])
         if submenu_opcion == "Bipartito":
             self.bipartito()
         if submenu_opcion == "Componentes conexas":
@@ -24,6 +24,16 @@ class EjecutarApp:
             self.estrategia1()
         if submenu_opcion == "Estrategia 2":    
             self.estrategia2()
+        if submenu_opcion == "Sustentacion Parcial":
+            self.sustentacionParcial()
+
+    def sustentacionParcial(self):
+        if st.session_state.grafo["nodes"] is None:
+            st.sidebar.warning("No se tiene un grafo en la aplicación.")
+            return
+        if st.sidebar.button("Ejecutar"):
+            st.write("Ejecutando sustentación parcial...")
+         
                         
     def bipartito(self):
         if st.session_state.grafo["nodes"] is None:
