@@ -25,7 +25,7 @@ combinaciones = generar_combinaciones_alternadas(8)
 # Crear la estructura completa con los datos del archivo
 estructura_final = []
 for comb, dato in zip(combinaciones, datos):
-    estructura_final.append([comb, dato[0], 1-dato[0]])  # Usar el valor correspondiente del archivo
+    estructura_final.append([comb, dato[1], 1-dato[0]])  # Usar el valor correspondiente del archivo
 
 # Mostrar la estructura final obtenida
 for lista in estructura_final:
