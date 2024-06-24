@@ -7,6 +7,7 @@ from scipy.stats import wasserstein_distance
 import pandas as pd
 import copy
 from time import time
+import random
 
 class EjecutarApp:
     def __init__(self):
@@ -15,7 +16,8 @@ class EjecutarApp:
     def menu(self):
         submenu_opcion = st.sidebar.selectbox("Seleccione una opción", 
                                               ["Bipartito", "Componentes conexas",
-                                              "Estrategia 1","Estrategia 2","Sustentacion Parcial"])
+                                              "Estrategia 1","Estrategia 2","Sustentacion Parcial",
+                                              "Estrategia Final"])
         if submenu_opcion == "Bipartito":
             self.bipartito()
         if submenu_opcion == "Componentes conexas":
@@ -26,14 +28,224 @@ class EjecutarApp:
             self.estrategia2()
         if submenu_opcion == "Sustentacion Parcial":
             self.sustentacionParcial()
+        if submenu_opcion == "Estrategia Final":
+            self.estrategiaFinal()
+            
+            
+    def estrategiaFinal(self):
+        presenteUsuario = st.sidebar.text_input("Valores presentes")
+        futuroUsuarioString = st.sidebar.text_input("Valores futuros")
+        estadosString = st.sidebar.text_input("Estado inicial")
+        
+        # Pedir al usuario que ingrese la ruta del archivo
+        ruta_archivo = st.sidebar.file_uploader("Selecciona un archivo JSON", type=["json"])
+        
+        if ruta_archivo is not None:
+            start_time = time()  # Marca el inicio del tiempo
+            json_data = json.load(ruta_archivo)
+        
+            # Separar los valores usando el caracter de comillas como delimitador
+            valores_futuros_lista = futuroUsuarioString.split("'")
+
+            # Eliminar elementos vacíos y espacios adicionales
+            valores_futuros_lista = [valor.strip() for valor in valores_futuros_lista if valor.strip()]
+
+            # Agregar comillas simples alrededor de cada letra
+            futuroUsuario = [f"{valor}'" for valor in valores_futuros_lista]
+            
+            nodes = []
+            edges = []
+            i = 0
+            idOrigen = 0
+            
+            for letra in presenteUsuario:
+                    nodes.append(Node(id=i+1,label=letra))
+                    i += 1
+                    idOrigen += 1
+            for letra in futuroUsuario:
+                    nodes.append(Node(id=i+1,label=letra))
+                    i += 1
+                    
+            for node in nodes:
+                for node2 in nodes:
+                    if node.id <= idOrigen and node2.id > idOrigen:
+                        edges.append(Edge(source=node.id, target=node2.id, label="", color="#000000"))
+            
+            tabla_margOriginal = []
+            probabilidadOriginal = self.generar_probabilidad(futuroUsuarioString, presenteUsuario,
+                                                                estadosString,json_data)
+            if probabilidadOriginal is not None:
+                    for margOriginal in probabilidadOriginal:
+                        tabla_margOriginal.append(margOriginal)
+                        
+            #Calcular el producto tensorial de Kronecker para cada tensor en la lista
+            for i, diccionario in enumerate(tabla_margOriginal):
+                tensor = np.array(diccionario["calculos"])
+                if i == 0:
+                    producto_tensorial = tensor
+                else:
+                    producto_tensorial = np.kron(producto_tensorial, tensor)
+                    
+            tensorOriginal = producto_tensorial.copy()
+            
+            #st.write("Tensor original")
+            #st.write(probabilidadOriginal)
+            #st.write(tensorOriginal)
+            
+            # Evaluar una partición aleatoria
+            particion1, particion2 = self.particion_aleatoria(nodes)
+            
+            for combinacion in [particion1, particion2]:
+                futuro = ""
+                presente = ""
+                tabla_marg = []
+                for letra in combinacion:
+                    if "'" in letra:
+                        futuro += letra
+                    else:
+                        presente += letra
+                        
+                st.sidebar.warning(f"Presente: {presente}, Futuro: {futuro}")
+                
+                # Evaluar subgrafo
+                probabilidad = self.generar_probabilidad(futuro, presente, estadosString, json_data)
+                if probabilidad is None:
+                    continue 
+                for marg in probabilidad:
+                    tabla_marg.append(marg)
+                    
+                tabla_marg_ordenada = sorted(tabla_marg, key=lambda x: x["letra"])
+                
+                st.write(combinacion)
+                st.write(tabla_marg_ordenada)
+            
+    def particion_aleatoria(self,nodes):
+        n = len(nodes)
+        indices = list(range(n))
+        random.shuffle(indices)
+        mitad = n // 2
+
+        particion1 = [nodes[i].label for i in indices[:mitad]]
+        particion2 = [nodes[i].label for i in indices[mitad:]]
+
+        # Verificar que ninguna partición esté vacía
+        if not particion1:
+            particion1.append(particion2.pop())
+        if not particion2:
+            particion2.append(particion1.pop())
+
+        # Verificar que cada partición tiene al menos un nodo futuro
+        if not any("'" in label for label in particion1):
+            for i in range(len(particion2)):
+                if "'" in particion2[i]:
+                    particion1.append(particion2.pop(i))
+                    break
+
+        if not any("'" in label for label in particion2):
+            for i in range(len(particion1)):
+                if "'" in particion1[i]:
+                    particion2.append(particion1.pop(i))
+                    break
+
+        # Verificar que ninguna partición esté vacía después del ajuste
+        if not particion1 or not particion2:
+            particion1, particion2 = [], []
+            for i, index in enumerate(indices):
+                if i % 2 == 0:
+                    particion1.append(nodes[index].label)
+                else:
+                    particion2.append(nodes[index].label)
+
+        return particion1, particion2       
 
     def sustentacionParcial(self):
-        if st.session_state.grafo["nodes"] is None:
-            st.sidebar.warning("No se tiene un grafo en la aplicación.")
-            return
+        presenteUsuario = st.sidebar.text_input("Valores presentes")
+        futuroUsuario = st.sidebar.text_input("Valores futuros")
+
+        ruta_archivo = st.sidebar.file_uploader("Selecciona un archivo JSON", type=["json"])
+
         if st.sidebar.button("Ejecutar"):
-            st.write("Ejecutando sustentación parcial...")
-         
+            if ruta_archivo is None:
+                st.sidebar.warning("No se ha cargado un archivo")
+                return
+
+            # Leer el archivo JSON
+            archivo_json = json.load(ruta_archivo)
+
+            # Identificar las letras faltantes (las que no están en presenteUsuario)
+            letras_faltantes_presente = [x for x in 'ABCD' if x not in presenteUsuario]
+
+            # Inicializar los elementos filtrados con todos los elementos del JSON
+            elementos_filtrados = archivo_json
+
+            # Filtrar por las letras faltantes en 'presente'
+            for letra_faltante in letras_faltantes_presente:
+                indice_letra_faltante = 'ABCD'.index(letra_faltante)
+                elementos_filtrados = [
+                    item for item in elementos_filtrados 
+                    if item['presente'][indice_letra_faltante] == '0'
+                ]
+
+            # Mostrar los presentes ajustados
+            for item in elementos_filtrados:
+                nuevo_presente = ''.join([
+                    item['presente'][i] for i in range(len(item['presente'])) 
+                    if 'ABCD'[i] in presenteUsuario
+                ])
+                item['presente'] = nuevo_presente
+
+            # Si hay valores futuros proporcionados, filtrar también en 'futuro'
+            if futuroUsuario:
+                
+                indices_letras_faltantes_futuro = [i for i, x in enumerate('ABCD') if x in futuroUsuario]
+
+                for item in elementos_filtrados:
+                    futuros_agrupados = {}
+
+                    # Iterar sobre los futuros y agruparlos por las letras presentes en futuroUsuario
+                    for key, value in item['futuro'].items():
+                        nuevo_key = ''.join([key[i] for i in indices_letras_faltantes_futuro])
+                        if nuevo_key in futuros_agrupados:
+                            futuros_agrupados[nuevo_key] += value
+                        else:
+                            futuros_agrupados[nuevo_key] = value
+
+                    # Actualizar el campo futuro del item con los futuros agrupados
+                    item['futuro'] = futuros_agrupados
+
+            # Mostrar los elementos filtrados
+            st.write("Elementos filtrados:")
+            st.json(elementos_filtrados)
+            
+            ##Acá se pasa al formato requerido, falta sumarlo todo el un json y guardarlo en una variable global
+            #self.transformar_estructura(elementos_filtrados, futuroUsuario)
+            
+    def transformar_estructura(self, elementos_filtrados,futuroUsuario):
+        # Lista para almacenar las probabilidades transformadas
+        probabilidades = []
+
+        for item in elementos_filtrados:
+            presente = item["presente"]
+            futuro = item["futuro"]
+            
+            # Convertimos el presente en una lista de enteros
+            presente_lista = [int(bit) for bit in presente]
+            
+            # Obtenemos las probabilidades para el futuro
+            probabilidad_0 = futuro["0"]
+            probabilidad_1 = futuro["1"]
+            
+            # Creamos la entrada en el formato deseado y la agregamos a la lista
+            entrada_transformada = [presente_lista, probabilidad_0, probabilidad_1]
+            probabilidades.append(entrada_transformada)
+        
+        # Estructura final en formato JSON
+        estructura_final = {
+            "nombre": futuroUsuario + "'",
+            "probabilidades": probabilidades
+        }
+        print(estructura_final)
+            
                         
     def bipartito(self):
         if st.session_state.grafo["nodes"] is None:
