@@ -19,14 +19,14 @@ def generar_combinaciones_alternadas(n):
 # Leer los datos del archivo
 datos = leer_datos_archivo('datos.txt')
 
-# Generar las combinaciones alternadas para 8 nodos
-combinaciones = generar_combinaciones_alternadas(8)
+# Generar las combinaciones alternadas para n nodos
+combinaciones = generar_combinaciones_alternadas(10)
 
 # Crear la estructura completa con los datos del archivo
 estructura_final = []
 for comb, dato in zip(combinaciones, datos):
     # Convertir los valores flotantes a enteros
-    valor = int(dato[7])
+    valor = int(dato[9])
     estructura_final.append([comb, valor, 1 - valor])
 
 # Mostrar la estructura final obtenida
