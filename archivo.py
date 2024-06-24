@@ -325,8 +325,18 @@ class ArchivoApp:
                 
                 for node in json_data["graph"][0]["data"]:
                     idNode = node["id"]
-                    nodes.append(Node(id=idNode, size=node["radius"], label=node["label"], 
-                                      type=node["type"], data=node["data"], color="#ffff00", shape="circle"))
+                    nuevo_nodo = Node(
+                        id=idNode,
+                        size=node["radius"],
+                        label=node["label"],
+                        type=node["type"],
+                        data=node["data"],
+                        color="#ffff00",
+                        shape="circle",
+                        grado=node["grado"],
+                        intermediacion=node["intermediacion"]
+                    )
+                    nodes.append(nuevo_nodo)
                 
                 for node in json_data["graph"][0]["data"]:
                     idNode = node["id"]

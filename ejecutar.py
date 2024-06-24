@@ -30,7 +30,12 @@ class EjecutarApp:
             self.sustentacionParcial()
         if submenu_opcion == "Estrategia Final":
             self.estrategiaFinal()
-            
+     
+    def buscar_nodo(self, label):
+        for nodo in st.session_state.grafo["nodes"]:
+            if nodo.label == label:
+                return nodo
+        return None       
             
     def estrategiaFinal(self):
         presenteUsuario = st.sidebar.text_input("Valores presentes")
@@ -58,13 +63,42 @@ class EjecutarApp:
             i = 0
             idOrigen = 0
             
+            # Para los nodos del presente
             for letra in presenteUsuario:
-                    nodes.append(Node(id=i+1,label=letra))
-                    i += 1
-                    idOrigen += 1
+                nodo = self.buscar_nodo(letra)
+                if nodo:
+                    grado = nodo.grado
+                    intermediacion = nodo.intermediacion
+                else:
+                    grado = 0
+                    intermediacion = 0
+                
+                nodes.append(Node(
+                    id=i+1,
+                    label=letra,
+                    grado=grado,
+                    intermediacion=intermediacion
+                ))
+                i += 1
+                idOrigen += 1
+
+            # Para los nodos del futuro
             for letra in futuroUsuario:
-                    nodes.append(Node(id=i+1,label=letra))
-                    i += 1
+                nodo = self.buscar_nodo(letra)
+                if nodo:
+                    grado = nodo.grado
+                    intermediacion = nodo.intermediacion
+                else:
+                    grado = 0
+                    intermediacion = 0
+                
+                nodes.append(Node(
+                    id=i+1,
+                    label=letra,
+                    grado=grado,
+                    intermediacion=intermediacion
+                ))
+                i += 1
                     
             for node in nodes:
                 for node2 in nodes:
@@ -94,18 +128,16 @@ class EjecutarApp:
             
             # Evaluar una partición aleatoria
             particion1, particion2 = self.particion_aleatoria(nodes)
-            
+            tabla_marg = []
             for combinacion in [particion1, particion2]:
                 futuro = ""
                 presente = ""
-                tabla_marg = []
+                
                 for letra in combinacion:
                     if "'" in letra:
                         futuro += letra
                     else:
                         presente += letra
-                        
-                st.sidebar.warning(f"Presente: {presente}, Futuro: {futuro}")
                 
                 # Evaluar subgrafo
                 probabilidad = self.generar_probabilidad(futuro, presente, estadosString, json_data)
@@ -114,11 +146,46 @@ class EjecutarApp:
                 for marg in probabilidad:
                     tabla_marg.append(marg)
                     
-                tabla_marg_ordenada = sorted(tabla_marg, key=lambda x: x["letra"])
-                
                 st.write(combinacion)
-                st.write(tabla_marg_ordenada)
+                
+            tabla_marg_ordenada = sorted(tabla_marg, key=lambda x: x["letra"])
+                
+            # Calcular el producto tensorial de Kronecker para cada tensor en la lista
+            for i, diccionario in enumerate(tabla_marg_ordenada):
+                # Acceder a los cálculos almacenados en el diccionario
+                tensor = np.array(diccionario["calculos"])
+                if i == 0:
+                    producto_tensorial = tensor
+                else:
+                    producto_tensorial = np.kron(producto_tensorial, tensor)
+        
+            # Añadir una copia del producto tensorial a la lista de tensores
             
+            st.write(tabla_marg_ordenada)
+            st.write(producto_tensorial)
+            st.write(tensorOriginal)
+                
+            # Calcular la distancia de Wasserstein (EMD) entre cada tensor y el tensor original
+            
+            emd_distance = wasserstein_distance(np.arange(producto_tensorial.size), np.arange(tensorOriginal.size),
+                                                u_weights=producto_tensorial, v_weights=tensorOriginal)
+            st.write(f"Distancia de Wasserstein (EMD) entre tensor y tensorOriginal: {emd_distance}")
+            
+            for etiqueta in particion1:
+                # Buscar el nodo correspondiente en la lista original de nodos
+                nodo = next((n for n in nodes if n.label == etiqueta), None)
+                if nodo:
+                    st.write(f"Etiqueta: {nodo.label}")
+                    st.write(f"Grado: {nodo.grado}")
+                    st.write(f"Intermediación: {nodo.intermediacion}")
+                else:
+                    st.write(f"No se encontró información para la etiqueta: {etiqueta}")
+                st.write("---")  # Separador para mejor legibilidad
+
+            
+
+                
+                
     def particion_aleatoria(self,nodes):
         n = len(nodes)
         indices = list(range(n))
