@@ -8,6 +8,8 @@ import pandas as pd
 import copy
 from time import time
 import random
+from scipy.spatial.distance import hamming
+from scipy.optimize import linear_sum_assignment
 
 class EjecutarApp:
     def __init__(self):
@@ -41,7 +43,7 @@ class EjecutarApp:
         presenteUsuario = st.sidebar.text_input("Valores presentes")
         futuroUsuarioString = st.sidebar.text_input("Valores futuros")
         estadosString = st.sidebar.text_input("Estado inicial")
-        st.sidebar.write("Se moveran los nodos menores o iguales a estos parametros: ")
+        st.sidebar.markdown("#### Se moveran los nodos menores o iguales a estos parametros")
         gradoLimite = st.sidebar.number_input("Grado", min_value=0, step=1, format="%d")
         intermediacionLimite = st.sidebar.number_input("Intermediación (betweenness)", 
                                                        min_value=0.0, format="%.2f")
@@ -49,8 +51,38 @@ class EjecutarApp:
          
         # Pedir al usuario que ingrese la ruta del archivo
         ruta_archivo = st.sidebar.file_uploader("Selecciona un archivo JSON", type=["json"])
-        
-        if ruta_archivo is not None:
+        st.markdown("""
+            <style>
+            .stButton > button {
+                background-color: white;  /* Color de fondo del botón */
+                border: 2px solid #f44336;  /* Color del borde del botón */
+                color: #f44336;  /* Color del texto */
+                padding: 10px 24px;  /* Padding interno */
+                text-align: center;  /* Alinear el texto */
+                text-decoration: none;  /* Sin subrayado */
+                display: inline-block;  /* Display en línea */
+                font-size: 16px;  /* Tamaño del texto */
+                margin: 4px 2px;  /* Margen */
+                transition-duration: 0.4s;  /* Duración de la transición */
+                cursor: pointer;  /* Cambiar el cursor al pasar por encima */
+                width: 100%;  /* Ancho del botón */
+            }
+            .stButton > button:hover {
+                background-color: #f44336;  /* Color de fondo al pasar el cursor */
+                color: white;  /* Color del texto al pasar el cursor */
+            }
+            .stButton {
+                text-align: center;  /* Centrar el contenedor del botón */
+            }
+            </style>
+        """, unsafe_allow_html=True)
+
+        # Contenedor para centrar el botón
+        if st.sidebar.button("Ejecutar"):
+            if ruta_archivo is None:
+                st.sidebar.warning("No se ha cargado un archivo")
+                return
+            
             start_time = time()  # Marca el inicio del tiempo
             json_data = json.load(ruta_archivo)
         
@@ -179,20 +211,24 @@ class EjecutarApp:
             nodo = next((n for n in nodes if n.label == etiqueta), None)
             if nodo:
                 st.write(f"Nodo: {etiqueta}, Grado: {nodo.grado}, Intermediación: {nodo.intermediacion}")
-        
+
         st.markdown(f"#### Evaluando movimientos de {nombre_origen} a {nombre_destino}:")
 
         for etiqueta in particion_origen[:]:
             nodo = next((n for n in nodes if n.label == etiqueta), None)
             if nodo:
-                st.write(f"Evaluando nodo '{etiqueta}':")
                 st.write(f"Grado: {nodo.grado}, Intermediación: {nodo.intermediacion}")
                 
                 if nodo.grado <= gradoLimite and nodo.intermediacion <= intermediacionLimite:
                     st.write("Cumple con los criterios de grado e intermediación.")
+                    
+                    # Verificación de que la partición origen no quede vacía
                     particion_origen_temp = [e for e in particion_origen if e != etiqueta]
-                    particion_destino_temp = particion_destino + [etiqueta]
+                    if len(particion_origen_temp) == 0:
+                        st.write(f"No se puede mover el nodo '{etiqueta}' porque dejaría a {nombre_origen} vacío.")
+                        continue
 
+                    particion_destino_temp = particion_destino + [etiqueta]
                     emd_nuevo = self.evaluarEMD(particion_origen_temp, particion_destino_temp, estadosString, json_data, tensorOriginal)
 
                     st.write(f"Nueva {nombre_origen}: {', '.join(particion_origen_temp)}")
@@ -203,7 +239,7 @@ class EjecutarApp:
                         emd_resultado = emd_nuevo
                         combinacion_resultado[0] = particion_origen_temp.copy()
                         combinacion_resultado[1] = particion_destino_temp.copy()
-                        st.markdown("#### ¡Nuevo óptimo encontrado!")
+                        st.markdown("##### ¡Nuevo óptimo encontrado!")
                     else:
                         st.write("No mejora el EMD óptimo actual.")
                 else:
@@ -225,33 +261,26 @@ class EjecutarApp:
         
         tabla_marg_ordenada = sorted(tabla_marg, key=lambda x: x["letra"])
         
-        producto_tensorial = None
-        for diccionario in tabla_marg_ordenada:
-            tensor = np.array(diccionario["calculos"])
-            if producto_tensorial is None:
-                producto_tensorial = tensor
-            else:
-                producto_tensorial = np.kron(producto_tensorial, tensor)
+        producto_tensorial = self.construir_producto_tensorial(tabla_marg_ordenada)
         
         if producto_tensorial is None:
             return float('inf')
         
-        emd_distance = wasserstein_distance(np.arange(producto_tensorial.size), 
-                                            np.arange(tensorOriginal.size),
-                                            u_weights=producto_tensorial, 
-                                            v_weights=tensorOriginal)
+        emd_distance = self.hamming_emd_tensorial(producto_tensorial, tensorOriginal)
         
         return emd_distance
+    
+    
                         
                         
     def particion_aleatoria(self,nodes):
         n = len(nodes)
         indices = list(range(n))
         random.shuffle(indices)
-        mitad = n // 2
+        division = random.randint(1, n - 1)
 
-        particion1 = [nodes[i].label for i in indices[:mitad]]
-        particion2 = [nodes[i].label for i in indices[mitad:]]
+        particion1 = [nodes[i].label for i in indices[:division]]
+        particion2 = [nodes[i].label for i in indices[division:]]
 
         # Verificar que ninguna partición esté vacía
         if not particion1:
@@ -281,7 +310,44 @@ class EjecutarApp:
                 else:
                     particion2.append(nodes[index].label)
 
-        return particion1, particion2       
+        return particion1, particion2   
+    
+    def hamming_emd_tensorial(self, producto_tensorial, tensorOriginal):
+        # Aplanar los tensores
+        flat1 = producto_tensorial.flatten()
+        flat2 = tensorOriginal.flatten()
+        
+        # Asegurarse de que los tensores tienen la misma longitud
+        if len(flat1) != len(flat2):
+            raise ValueError("Los tensores deben tener la misma cantidad de elementos")
+        
+        # Crear una matriz de distancias de Hamming
+        n = len(flat1)
+        dist_matrix = np.zeros((n, n))
+        for i in range(n):
+            for j in range(n):
+                dist_matrix[i, j] = hamming(flat1[i:i+1], flat2[j:j+1])
+        
+        # Resolver el problema de asignación
+        row_ind, col_ind = linear_sum_assignment(dist_matrix)
+        
+        # Calcular la EMD
+        emd_distance = 0
+        for i, j in zip(row_ind, col_ind):
+            emd_distance += dist_matrix[i, j] * min(flat1[i], flat2[j])
+        
+        return emd_distance
+    
+    # Función para construir el producto tensorial
+    def construir_producto_tensorial(self,tabla_marg_ordenada):
+        producto_tensorial = None
+        for diccionario in tabla_marg_ordenada:
+            tensor = np.array(diccionario["calculos"])
+            if producto_tensorial is None:
+                producto_tensorial = tensor
+            else:
+                producto_tensorial = np.kron(producto_tensorial, tensor)
+        return producto_tensorial    
 
     def sustentacionParcial(self):
         presenteUsuario = st.sidebar.text_input("Valores presentes")
@@ -546,8 +612,9 @@ class EjecutarApp:
             lista_emd = []
             #st.write(tensores)
             for i, tensor in enumerate(tensores):
-                emd_distance = wasserstein_distance(np.arange(tensor.size), np.arange(tensorOriginal.size),
-                                                    u_weights=tensor, v_weights=tensorOriginal)
+                # emd_distance = wasserstein_distance(np.arange(tensor.size), np.arange(tensorOriginal.size),
+                #                                     u_weights=tensor, v_weights=tensorOriginal)
+                emd_distance = self.hamming_emd_tensorial(tensor, tensorOriginal)
                 lista_emd.append(emd_distance)
                 #st.write(f"Combinación: {combinaciones[i]}")
                 #st.write(f"Tensor: {tensor}")
@@ -757,8 +824,10 @@ class EjecutarApp:
                             
                     tensor = producto_tensorial.copy()
                     
-                    emd_distance = wasserstein_distance(np.arange(tensor.size), np.arange(tensorOriginal.size),
-                                                        u_weights=tensor, v_weights=tensorOriginal)
+                    #emd_distance = wasserstein_distance(np.arange(tensor.size), np.arange(tensorOriginal.size),
+                    #                                    u_weights=tensor, v_weights=tensorOriginal)
+                    
+                    emd_distance = self.hamming_emd_tensorial(tensor, tensorOriginal)
                     
                     edge.label = emd_distance
                     
@@ -1067,3 +1136,5 @@ class EjecutarApp:
             resultado1 = suma_penultimos_valores / contador_filas  # Dividir por el contador de filas
             resultado2 = suma_ultimos_valores / contador_filas  # Dividir por el contador de filas
             return resultado1, resultado2
+        
+    
