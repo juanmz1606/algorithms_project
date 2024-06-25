@@ -41,7 +41,12 @@ class EjecutarApp:
         presenteUsuario = st.sidebar.text_input("Valores presentes")
         futuroUsuarioString = st.sidebar.text_input("Valores futuros")
         estadosString = st.sidebar.text_input("Estado inicial")
+        st.sidebar.write("Se moveran los nodos menores o iguales a estos parametros: ")
+        gradoLimite = st.sidebar.number_input("Grado", min_value=0, step=1, format="%d")
+        intermediacionLimite = st.sidebar.number_input("Intermediación (betweenness)", 
+                                                       min_value=0.0, format="%.2f")
         
+         
         # Pedir al usuario que ingrese la ruta del archivo
         ruta_archivo = st.sidebar.file_uploader("Selecciona un archivo JSON", type=["json"])
         
@@ -126,66 +131,119 @@ class EjecutarApp:
             #st.write(probabilidadOriginal)
             #st.write(tensorOriginal)
             
-            # Evaluar una partición aleatoria
             particion1, particion2 = self.particion_aleatoria(nodes)
-            tabla_marg = []
-            for combinacion in [particion1, particion2]:
-                futuro = ""
-                presente = ""
-                
-                for letra in combinacion:
-                    if "'" in letra:
-                        futuro += letra
-                    else:
-                        presente += letra
-                
-                # Evaluar subgrafo
-                probabilidad = self.generar_probabilidad(futuro, presente, estadosString, json_data)
-                if probabilidad is None:
-                    continue 
-                for marg in probabilidad:
-                    tabla_marg.append(marg)
-                    
-                st.write(combinacion)
-                
-            tabla_marg_ordenada = sorted(tabla_marg, key=lambda x: x["letra"])
-                
-            # Calcular el producto tensorial de Kronecker para cada tensor en la lista
-            for i, diccionario in enumerate(tabla_marg_ordenada):
-                # Acceder a los cálculos almacenados en el diccionario
-                tensor = np.array(diccionario["calculos"])
-                if i == 0:
-                    producto_tensorial = tensor
-                else:
-                    producto_tensorial = np.kron(producto_tensorial, tensor)
+    
+            emd_inicial = self.evaluarEMD(particion1, particion2, estadosString, json_data, tensorOriginal)
+            emd_resultado = emd_inicial
+            combinacion_resultado = [particion1.copy(), particion2.copy()]
+
+            st.markdown("### Partición inicial:")
+            st.write(f"Partición 1: {', '.join(particion1)}")
+            st.write(f"Partición 2: {', '.join(particion2)}")
+            st.write(f"EMD inicial: {emd_inicial}")
+
+            # Evaluar movimientos de Partición 1 a Partición 2
+            emd_resultado, combinacion_resultado = self.evaluar_particion(
+                particion1, particion2, "Partición 1", "Partición 2",
+                estadosString, json_data, tensorOriginal, emd_resultado, combinacion_resultado, nodes, gradoLimite, intermediacionLimite
+            )
+
+            # Evaluar movimientos de Partición 2 a Partición 1
+            emd_resultado, combinacion_resultado = self.evaluar_particion(
+                particion2, particion1, "Partición 2", "Partición 1",
+                estadosString, json_data, tensorOriginal, emd_resultado, combinacion_resultado, nodes, gradoLimite, intermediacionLimite
+            )
+
+            # Convertir cada partición a una cadena
+            particion1_str = ', '.join(combinacion_resultado[0])
+            particion2_str = ', '.join(combinacion_resultado[1])
+
+            st.markdown("### Mejor combinación encontrada:")
+            st.write(f"Partición 1: {particion1_str}")
+            st.write(f"Partición 2: {particion2_str}")
+            st.write(f"EMD óptimo: {emd_resultado}")
+
+            # Marca el final del tiempo
+            end_time = time() - start_time
+            st.write(f"Tiempo total de ejecución: {end_time} segundos")
+
+            st.markdown("### Valores utilizados:")
+            st.write(f"Grado límite: {gradoLimite}")
+            st.write(f"Intermediación límite: {intermediacionLimite}")
+            
+    def evaluar_particion(self, particion_origen, particion_destino, nombre_origen, nombre_destino,
+                      estadosString, json_data, tensorOriginal, emd_resultado, combinacion_resultado,
+                      nodes, gradoLimite, intermediacionLimite):
+        st.markdown(f"#### Información de los nodos en {nombre_origen}:")
+        for etiqueta in particion_origen:
+            nodo = next((n for n in nodes if n.label == etiqueta), None)
+            if nodo:
+                st.write(f"Nodo: {etiqueta}, Grado: {nodo.grado}, Intermediación: {nodo.intermediacion}")
         
-            # Añadir una copia del producto tensorial a la lista de tensores
-            
-            st.write(tabla_marg_ordenada)
-            st.write(producto_tensorial)
-            st.write(tensorOriginal)
+        st.markdown(f"#### Evaluando movimientos de {nombre_origen} a {nombre_destino}:")
+
+        for etiqueta in particion_origen[:]:
+            nodo = next((n for n in nodes if n.label == etiqueta), None)
+            if nodo:
+                st.write(f"Evaluando nodo '{etiqueta}':")
+                st.write(f"Grado: {nodo.grado}, Intermediación: {nodo.intermediacion}")
                 
-            # Calcular la distancia de Wasserstein (EMD) entre cada tensor y el tensor original
-            
-            emd_distance = wasserstein_distance(np.arange(producto_tensorial.size), np.arange(tensorOriginal.size),
-                                                u_weights=producto_tensorial, v_weights=tensorOriginal)
-            st.write(f"Distancia de Wasserstein (EMD) entre tensor y tensorOriginal: {emd_distance}")
-            
-            for etiqueta in particion1:
-                # Buscar el nodo correspondiente en la lista original de nodos
-                nodo = next((n for n in nodes if n.label == etiqueta), None)
-                if nodo:
-                    st.write(f"Etiqueta: {nodo.label}")
-                    st.write(f"Grado: {nodo.grado}")
-                    st.write(f"Intermediación: {nodo.intermediacion}")
+                if nodo.grado <= gradoLimite and nodo.intermediacion <= intermediacionLimite:
+                    st.write("Cumple con los criterios de grado e intermediación.")
+                    particion_origen_temp = [e for e in particion_origen if e != etiqueta]
+                    particion_destino_temp = particion_destino + [etiqueta]
+
+                    emd_nuevo = self.evaluarEMD(particion_origen_temp, particion_destino_temp, estadosString, json_data, tensorOriginal)
+
+                    st.write(f"Nueva {nombre_origen}: {', '.join(particion_origen_temp)}")
+                    st.write(f"Nueva {nombre_destino}: {', '.join(particion_destino_temp)}")
+                    st.write(f"Nuevo EMD: {emd_nuevo}")
+
+                    if emd_nuevo < emd_resultado:
+                        emd_resultado = emd_nuevo
+                        combinacion_resultado[0] = particion_origen_temp.copy()
+                        combinacion_resultado[1] = particion_destino_temp.copy()
+                        st.markdown("#### ¡Nuevo óptimo encontrado!")
+                    else:
+                        st.write("No mejora el EMD óptimo actual.")
                 else:
-                    st.write(f"No se encontró información para la etiqueta: {etiqueta}")
-                st.write("---")  # Separador para mejor legibilidad
-
+                    st.write("No cumple con los criterios de grado e intermediación. No se mueve.")
+        
+        return emd_resultado, combinacion_resultado
             
-
-                
-                
+                        
+    def evaluarEMD(self, particion1, particion2, estadosString, json_data, tensorOriginal):
+        tabla_marg = []
+        
+        for combinacion in [particion1, particion2]:
+            futuro = ''.join(letra for letra in combinacion if "'" in letra)
+            presente = ''.join(letra for letra in combinacion if "'" not in letra)
+            
+            probabilidad = self.generar_probabilidad(futuro, presente, estadosString, json_data)
+            if probabilidad is not None:
+                tabla_marg.extend(probabilidad)
+        
+        tabla_marg_ordenada = sorted(tabla_marg, key=lambda x: x["letra"])
+        
+        producto_tensorial = None
+        for diccionario in tabla_marg_ordenada:
+            tensor = np.array(diccionario["calculos"])
+            if producto_tensorial is None:
+                producto_tensorial = tensor
+            else:
+                producto_tensorial = np.kron(producto_tensorial, tensor)
+        
+        if producto_tensorial is None:
+            return float('inf')
+        
+        emd_distance = wasserstein_distance(np.arange(producto_tensorial.size), 
+                                            np.arange(tensorOriginal.size),
+                                            u_weights=producto_tensorial, 
+                                            v_weights=tensorOriginal)
+        
+        return emd_distance
+                        
+                        
     def particion_aleatoria(self,nodes):
         n = len(nodes)
         indices = list(range(n))
