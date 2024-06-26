@@ -46,7 +46,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 2,
@@ -91,7 +93,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 3,
@@ -136,7 +140,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 4,
@@ -181,7 +187,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 5,
@@ -226,7 +234,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 6,
@@ -271,7 +281,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 7,
@@ -316,7 +328,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 8,
@@ -361,7 +375,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 9,
@@ -374,7 +390,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 10,
@@ -388,7 +406,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 11,
@@ -402,7 +422,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 12,
@@ -416,7 +438,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 13,
@@ -430,7 +454,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 14,
@@ -444,7 +470,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 15,
@@ -458,7 +486,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 16,
@@ -472,7 +502,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         }
       ]
     }

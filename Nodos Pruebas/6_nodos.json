@@ -38,7 +38,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.05
         },
         {
           "id": 2,
@@ -75,7 +77,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 4,
+          "intermediacion":0.3
         },
         {
           "id": 3,
@@ -112,7 +116,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion":0.1
         },
         {
           "id": 4,
@@ -149,7 +155,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion":0.15
         },
         {
           "id": 5,
@@ -186,7 +194,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 1,
+          "intermediacion":0.05
         },
         {
           "id": 6,
@@ -223,7 +233,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 3,
+          "intermediacion": 0.2
         },
         {
           "id": 7,
@@ -235,7 +247,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 3,
+          "intermediacion": 0.1
         },
         {
           "id": 8,
@@ -247,7 +261,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 3,
+          "intermediacion": 0.15
         },
         {
           "id": 9,
@@ -259,7 +275,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 1,
+          "intermediacion": 0.05
         },
         {
           "id": 10,
@@ -271,7 +289,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 3,
+          "intermediacion": 0.1
         },
         {
           "id": 11,
@@ -283,7 +303,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 3,
+          "intermediacion": 0.2
         },
         {
           "id": 12,
@@ -295,7 +317,9 @@
           "coordenates": {
             "x": 0,
             "y": 0
-          }
+          },
+          "grado": 2,
+          "intermediacion": 0.25
         }
       ]
     }

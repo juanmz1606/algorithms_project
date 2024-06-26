@@ -1,0 +1,723 @@
+{
+    "graph": [
+      {
+        "name": "G",
+        "data": [
+          {
+            "id": 1,
+            "label": "A",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+              {
+                "nodeId": 11,
+                "weight": 0
+              },
+              {
+                "nodeId": 12,
+                "weight": 1
+              },
+              {
+                "nodeId": 13,
+                "weight": 0
+              },
+              {
+                "nodeId": 14,
+                "weight": 0
+              },
+              {
+                "nodeId": 15,
+                "weight": 0
+              },
+              {
+                "nodeId": 16,
+                "weight": 0
+              },
+               {
+                "nodeId": 17,
+                "weight": 0
+              },
+              {
+                "nodeId": 18,
+                "weight": 0
+              },
+              {
+                "nodeId": 19,
+                "weight": 0
+              },
+              {
+                "nodeId": 20,
+                "weight": 0
+              }
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 2,
+            "label": "B",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+                {
+                    "nodeId": 11,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 12,
+                    "weight": 1
+                  },
+                  {
+                    "nodeId": 13,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 14,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 15,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 16,
+                    "weight": 0
+                  },
+                   {
+                    "nodeId": 17,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 18,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 19,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 20,
+                    "weight": 0
+                  }
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 3,
+            "label": "C",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+                {
+                    "nodeId": 11,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 12,
+                    "weight": 1
+                  },
+                  {
+                    "nodeId": 13,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 14,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 15,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 16,
+                    "weight": 0
+                  },
+                   {
+                    "nodeId": 17,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 18,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 19,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 20,
+                    "weight": 0
+                  }
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 4,
+            "label": "D",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+                {
+                    "nodeId": 11,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 12,
+                    "weight": 1
+                  },
+                  {
+                    "nodeId": 13,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 14,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 15,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 16,
+                    "weight": 0
+                  },
+                   {
+                    "nodeId": 17,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 18,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 19,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 20,
+                    "weight": 0
+                  }
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 5,
+            "label": "E",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+                {
+                    "nodeId": 11,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 12,
+                    "weight": 1
+                  },
+                  {
+                    "nodeId": 13,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 14,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 15,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 16,
+                    "weight": 0
+                  },
+                   {
+                    "nodeId": 17,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 18,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 19,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 20,
+                    "weight": 0
+                  }
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 6,
+            "label": "F",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+                {
+                    "nodeId": 11,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 12,
+                    "weight": 1
+                  },
+                  {
+                    "nodeId": 13,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 14,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 15,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 16,
+                    "weight": 0
+                  },
+                   {
+                    "nodeId": 17,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 18,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 19,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 20,
+                    "weight": 0
+                  }
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 7,
+            "label": "G",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+                {
+                    "nodeId": 11,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 12,
+                    "weight": 1
+                  },
+                  {
+                    "nodeId": 13,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 14,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 15,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 16,
+                    "weight": 0
+                  },
+                   {
+                    "nodeId": 17,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 18,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 19,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 20,
+                    "weight": 0
+                  }
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 8,
+            "label": "H",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+                {
+                    "nodeId": 11,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 12,
+                    "weight": 1
+                  },
+                  {
+                    "nodeId": 13,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 14,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 15,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 16,
+                    "weight": 0
+                  },
+                   {
+                    "nodeId": 17,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 18,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 19,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 20,
+                    "weight": 0
+                  }
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 9,
+            "label": "I",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+                {
+                    "nodeId": 11,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 12,
+                    "weight": 1
+                  },
+                  {
+                    "nodeId": 13,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 14,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 15,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 16,
+                    "weight": 0
+                  },
+                   {
+                    "nodeId": 17,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 18,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 19,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 20,
+                    "weight": 0
+                  }
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 10,
+            "label": "J",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+                {
+                    "nodeId": 11,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 12,
+                    "weight": 1
+                  },
+                  {
+                    "nodeId": 13,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 14,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 15,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 16,
+                    "weight": 0
+                  },
+                   {
+                    "nodeId": 17,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 18,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 19,
+                    "weight": 0
+                  },
+                  {
+                    "nodeId": 20,
+                    "weight": 0
+                  }
+              
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 11,
+            "label": "A'",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+            
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 12,
+            "label": "B'",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+            
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 13,
+            "label": "C'",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+            
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 14,
+            "label": "D'",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+             
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 15,
+            "label": "E'",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+             
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 16,
+            "label": "F'",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+              
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 17,
+            "label": "G'",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+             
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 18,
+            "label": "H'",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+             
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 19,
+            "label": "I'",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+            
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          },
+          {
+            "id": 20,
+            "label": "J'",
+            "data": {},
+            "type": " ",
+            "linkedTo": [
+            
+            ],
+            "radius": 25.0,
+            "coordenates": {
+              "x": 0,
+              "y": 0
+            },
+            "grado": 2,
+            "intermediacion": 0.05
+          }
+        ]
+      }
+    ],
+    "generalData1": 100,
+    "generalData2": "Alg",
+    "generalData3": 300
+  }

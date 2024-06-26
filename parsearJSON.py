@@ -20,7 +20,7 @@ def generar_combinaciones_alternadas(n):
 datos = leer_datos_archivo('datos.txt')
 
 # Generar las combinaciones alternadas para n nodos
-combinaciones = generar_combinaciones_alternadas(10)
+combinaciones = generar_combinaciones_alternadas(4)
 
 # Crear la estructura completa con los datos del archivo
 estructura_final = []
