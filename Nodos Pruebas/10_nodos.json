@@ -165,8 +165,8 @@
               "x": 0,
               "y": 0
             },
-            "grado": 2,
-            "intermediacion": 0.05
+            "grado": 5,
+            "intermediacion": 0.2
           },
           {
             "id": 4,
@@ -220,8 +220,8 @@
               "x": 0,
               "y": 0
             },
-            "grado": 2,
-            "intermediacion": 0.05
+            "grado": 4,
+            "intermediacion": 0.1
           },
           {
             "id": 5,
@@ -275,8 +275,8 @@
               "x": 0,
               "y": 0
             },
-            "grado": 2,
-            "intermediacion": 0.05
+            "grado": 5,
+            "intermediacion": 0.2
           },
           {
             "id": 6,
@@ -385,8 +385,8 @@
               "x": 0,
               "y": 0
             },
-            "grado": 2,
-            "intermediacion": 0.05
+            "grado": 4,
+            "intermediacion": 0.1
           },
           {
             "id": 8,
@@ -495,8 +495,8 @@
               "x": 0,
               "y": 0
             },
-            "grado": 2,
-            "intermediacion": 0.05
+            "grado": 5,
+            "intermediacion": 0.2
           },
           {
             "id": 10,
@@ -551,8 +551,8 @@
               "x": 0,
               "y": 0
             },
-            "grado": 2,
-            "intermediacion": 0.05
+            "grado": 4,
+            "intermediacion": 0.1
           },
           {
             "id": 11,
@@ -615,8 +615,8 @@
               "x": 0,
               "y": 0
             },
-            "grado": 2,
-            "intermediacion": 0.05
+            "grado": 5,
+            "intermediacion": 0.2
           },
           {
             "id": 15,
@@ -631,8 +631,8 @@
               "x": 0,
               "y": 0
             },
-            "grado": 2,
-            "intermediacion": 0.05
+            "grado": 4,
+            "intermediacion": 0.1
           },
           {
             "id": 16,
@@ -679,8 +679,8 @@
               "x": 0,
               "y": 0
             },
-            "grado": 2,
-            "intermediacion": 0.05
+            "grado": 4,
+            "intermediacion": 0.1
           },
           {
             "id": 19,
@@ -711,8 +711,8 @@
               "x": 0,
               "y": 0
             },
-            "grado": 2,
-            "intermediacion": 0.05
+            "grado": 5,
+            "intermediacion": 0.2
           }
         ]
       }

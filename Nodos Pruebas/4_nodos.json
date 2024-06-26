@@ -64,7 +64,7 @@
               "y": 0
             },
             "grado": 4,
-            "intermediacion":0.3
+            "intermediacion":0.1
           },
           {
             "id": 3,
@@ -95,7 +95,7 @@
               "y": 0
             },
             "grado": 2,
-            "intermediacion":0.1
+            "intermediacion": 0.05
           },
           {
             "id": 4,
@@ -125,8 +125,8 @@
               "x": 0,
               "y": 0
             },
-            "grado": 2,
-            "intermediacion":0.15
+            "grado": 5,
+            "intermediacion":0.2
           },
           {
             "id": 6,
@@ -153,8 +153,8 @@
               "x": 0,
               "y": 0
             },
-            "grado": 3,
-            "intermediacion": 0.2
+            "grado": 4,
+            "intermediacion": 0.1
           },
           {
             "id": 8,
@@ -167,8 +167,8 @@
               "x": 0,
               "y": 0
             },
-            "grado": 3,
-            "intermediacion": 0.15
+            "grado": 5,
+            "intermediacion": 0.2
             },
           {
             "id": 9,
@@ -181,7 +181,7 @@
               "x": 0,
               "y": 0
             },
-            "grado": 1,
+            "grado": 2,
             "intermediacion": 0.05
           }
         ]

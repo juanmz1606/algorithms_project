@@ -141,8 +141,8 @@
             "x": 0,
             "y": 0
           },
-          "grado": 2,
-          "intermediacion": 0.05
+          "grado": 4,
+          "intermediacion": 0.1
         },
         {
           "id": 4,
@@ -188,8 +188,8 @@
             "x": 0,
             "y": 0
           },
-          "grado": 2,
-          "intermediacion": 0.05
+          "grado": 5,
+          "intermediacion": 0.2
         },
         {
           "id": 5,
@@ -235,8 +235,8 @@
             "x": 0,
             "y": 0
           },
-          "grado": 2,
-          "intermediacion": 0.05
+          "grado": 5,
+          "intermediacion": 0.2
         },
         {
           "id": 6,
@@ -282,8 +282,8 @@
             "x": 0,
             "y": 0
           },
-          "grado": 2,
-          "intermediacion": 0.05
+          "grado": 4,
+          "intermediacion": 0.1
         },
         {
           "id": 7,
@@ -376,8 +376,8 @@
             "x": 0,
             "y": 0
           },
-          "grado": 2,
-          "intermediacion": 0.05
+          "grado": 4,
+          "intermediacion": 0.1
         },
         {
           "id": 9,
@@ -391,8 +391,8 @@
             "x": 0,
             "y": 0
           },
-          "grado": 2,
-          "intermediacion": 0.05
+          "grado": 5,
+          "intermediacion": 0.2
         },
         {
           "id": 10,
@@ -423,8 +423,8 @@
             "x": 0,
             "y": 0
           },
-          "grado": 2,
-          "intermediacion": 0.05
+          "grado": 4,
+          "intermediacion": 0.1
         },
         {
           "id": 12,
@@ -439,8 +439,8 @@
             "x": 0,
             "y": 0
           },
-          "grado": 2,
-          "intermediacion": 0.05
+          "grado": 5,
+          "intermediacion": 0.2
         },
         {
           "id": 13,
