@@ -15,15 +15,18 @@ class AnalisisApp:
             if st.session_state.estrategia2["estadoInicial"] is None:
                 st.sidebar.warning("Debe de ejecutar la estrategia 2 para realizar el análisis")
                 return
+            if st.session_state.estrategiaFinal["estadoInicial"] is None:
+                st.sidebar.warning("Debe de ejecutar la estrategia Final para realizar el análisis")
+                return
 
             # Suponiendo que los datos están en las variables proporcionadas
             datos = {
-                'Estrategia': ['Estrategia 1', 'Estrategia 2'],
-                'Estado Inicial': [st.session_state.estrategia1["estadoInicial"], st.session_state.estrategia2["estadoInicial"]],
-                'Presentes': [st.session_state.estrategia1["valPresente"], st.session_state.estrategia2["valPresente"]],
-                'Futuros': [st.session_state.estrategia1["valFuturo"], st.session_state.estrategia2["valFuturo"]],
-                'Pérdida': [st.session_state.estrategia1["valPerdida"], st.session_state.estrategia2["valPerdida"]],
-                'Tiempo': [f"{st.session_state.estrategia1['tiempo']:.3f}", f"{st.session_state.estrategia2['tiempo']:.3f}"]
+                'Estrategia': ['Estrategia 1', 'Estrategia 2', 'Estrategia Final'],
+                'Estado Inicial': [st.session_state.estrategia1["estadoInicial"], st.session_state.estrategia2["estadoInicial"], st.session_state.estrategiaFinal["estadoInicial"]],
+                'Presentes': [st.session_state.estrategia1["valPresente"], st.session_state.estrategia2["valPresente"], st.session_state.estrategiaFinal["valPresente"]],
+                'Futuros': [st.session_state.estrategia1["valFuturo"], st.session_state.estrategia2["valFuturo"], st.session_state.estrategiaFinal["valFuturo"]],
+                'Pérdida': [st.session_state.estrategia1["valPerdida"], st.session_state.estrategia2["valPerdida"], st.session_state.estrategiaFinal["valPerdida"]],
+                'Tiempo': [f"{st.session_state.estrategia1['tiempo']:.3f}", f"{st.session_state.estrategia2['tiempo']:.3f}", f"{st.session_state.estrategiaFinal['tiempo']:.3f}"]
             }
 
             # Convertir los datos en un DataFrame de pandas

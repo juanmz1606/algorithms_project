@@ -3,13 +3,14 @@ from streamlit_agraph import agraph, Node, Edge, Config
 from itertools import combinations
 import numpy as np
 import json
-from scipy.stats import wasserstein_distance
 import pandas as pd
 import copy
 from time import time
 import random
-from scipy.spatial.distance import hamming
 from scipy.optimize import linear_sum_assignment
+from functools import reduce
+from collections import defaultdict
+
 
 class EjecutarApp:
     def __init__(self):
@@ -40,131 +41,60 @@ class EjecutarApp:
         return None       
             
     def estrategiaFinal(self):
+        # Configuración de la interfaz de usuario
         presenteUsuario = st.sidebar.text_input("Valores presentes")
         futuroUsuarioString = st.sidebar.text_input("Valores futuros")
         estadosString = st.sidebar.text_input("Estado inicial")
-        st.sidebar.markdown("#### Se moveran los nodos menores o iguales a estos parametros")
+        st.sidebar.markdown("#### Se moverán los nodos menores o iguales a estos parámetros")
         gradoLimite = st.sidebar.number_input("Grado", min_value=0, step=1, format="%d")
-        intermediacionLimite = st.sidebar.number_input("Intermediación (betweenness)", 
-                                                       min_value=0.0, format="%.2f")
+        intermediacionLimite = st.sidebar.number_input("Intermediación (betweenness)", min_value=0.0, format="%.2f")
         
-         
-        # Pedir al usuario que ingrese la ruta del archivo
         ruta_archivo = st.sidebar.file_uploader("Selecciona un archivo JSON", type=["json"])
+        
+        # Estilo del botón (sin cambios)
         st.markdown("""
             <style>
             .stButton > button {
-                background-color: white;  /* Color de fondo del botón */
-                border: 2px solid #f44336;  /* Color del borde del botón */
-                color: #f44336;  /* Color del texto */
-                padding: 10px 24px;  /* Padding interno */
-                text-align: center;  /* Alinear el texto */
-                text-decoration: none;  /* Sin subrayado */
-                display: inline-block;  /* Display en línea */
-                font-size: 16px;  /* Tamaño del texto */
-                margin: 4px 2px;  /* Margen */
-                transition-duration: 0.4s;  /* Duración de la transición */
-                cursor: pointer;  /* Cambiar el cursor al pasar por encima */
-                width: 100%;  /* Ancho del botón */
+                background-color: white;
+                border: 2px solid #f44336;
+                color: #f44336;
+                padding: 10px 24px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 16px;
+                margin: 4px 2px;
+                transition-duration: 0.4s;
+                cursor: pointer;
+                width: 100%;
             }
             .stButton > button:hover {
-                background-color: #f44336;  /* Color de fondo al pasar el cursor */
-                color: white;  /* Color del texto al pasar el cursor */
+                background-color: #f44336;
+                color: white;
             }
             .stButton {
-                text-align: center;  /* Centrar el contenedor del botón */
+                text-align: center;
             }
             </style>
         """, unsafe_allow_html=True)
 
-        # Contenedor para centrar el botón
         if st.sidebar.button("Ejecutar"):
             if ruta_archivo is None:
                 st.sidebar.warning("No se ha cargado un archivo")
                 return
             
-            start_time = time()  # Marca el inicio del tiempo
+            start_time = time()
             json_data = json.load(ruta_archivo)
         
-            # Separar los valores usando el caracter de comillas como delimitador
-            valores_futuros_lista = futuroUsuarioString.split("'")
-
-            # Eliminar elementos vacíos y espacios adicionales
-            valores_futuros_lista = [valor.strip() for valor in valores_futuros_lista if valor.strip()]
-
-            # Agregar comillas simples alrededor de cada letra
-            futuroUsuario = [f"{valor}'" for valor in valores_futuros_lista]
+            futuroUsuario = [f"{valor.strip()}'" for valor in futuroUsuarioString.split("'") if valor.strip()]
             
-            nodes = []
-            edges = []
-            i = 0
-            idOrigen = 0
+            # Crear nodos y aristas
+            nodes = self.crear_nodos(presenteUsuario, futuroUsuario)
             
-            # Para los nodos del presente
-            for letra in presenteUsuario:
-                nodo = self.buscar_nodo(letra)
-                if nodo:
-                    grado = nodo.grado
-                    intermediacion = nodo.intermediacion
-                else:
-                    grado = 0
-                    intermediacion = 0
-                
-                nodes.append(Node(
-                    id=i+1,
-                    label=letra,
-                    grado=grado,
-                    intermediacion=intermediacion
-                ))
-                i += 1
-                idOrigen += 1
-
-            # Para los nodos del futuro
-            for letra in futuroUsuario:
-                nodo = self.buscar_nodo(letra)
-                if nodo:
-                    grado = nodo.grado
-                    intermediacion = nodo.intermediacion
-                else:
-                    grado = 0
-                    intermediacion = 0
-                
-                nodes.append(Node(
-                    id=i+1,
-                    label=letra,
-                    grado=grado,
-                    intermediacion=intermediacion
-                ))
-                i += 1
-                    
-            for node in nodes:
-                for node2 in nodes:
-                    if node.id <= idOrigen and node2.id > idOrigen:
-                        edges.append(Edge(source=node.id, target=node2.id, label="", color="#000000"))
-            
-            tabla_margOriginal = []
-            probabilidadOriginal = self.generar_probabilidad(futuroUsuarioString, presenteUsuario,
-                                                                estadosString,json_data)
-            if probabilidadOriginal is not None:
-                    for margOriginal in probabilidadOriginal:
-                        tabla_margOriginal.append(margOriginal)
-                        
-            #Calcular el producto tensorial de Kronecker para cada tensor en la lista
-            for i, diccionario in enumerate(tabla_margOriginal):
-                tensor = np.array(diccionario["calculos"])
-                if i == 0:
-                    producto_tensorial = tensor
-                else:
-                    producto_tensorial = np.kron(producto_tensorial, tensor)
-                    
-            tensorOriginal = producto_tensorial.copy()
-            
-            #st.write("Tensor original")
-            #st.write(probabilidadOriginal)
-            #st.write(tensorOriginal)
+            tensorOriginal = self.calcular_tensor_original(futuroUsuarioString, presenteUsuario, 
+                                                           estadosString, json_data)
             
             particion1, particion2 = self.particion_aleatoria(nodes)
-    
             emd_inicial = self.evaluarEMD(particion1, particion2, estadosString, json_data, tensorOriginal)
             emd_resultado = emd_inicial
             combinacion_resultado = [particion1.copy(), particion2.copy()]
@@ -172,93 +102,91 @@ class EjecutarApp:
             st.markdown("### Partición inicial:")
             st.write(f"Partición 1: {', '.join(particion1)}")
             st.write(f"Partición 2: {', '.join(particion2)}")
-            st.write(f"EMD inicial: {emd_inicial}")
+            st.write(f"EMD inicial: {emd_inicial:.3f}")
 
-            # Evaluar movimientos de Partición 1 a Partición 2
-            emd_resultado, combinacion_resultado = self.evaluar_particion(
-                particion1, particion2, "Partición 1", "Partición 2",
-                estadosString, json_data, tensorOriginal, emd_resultado, combinacion_resultado, nodes, gradoLimite, intermediacionLimite
+            # Evaluar movimientos
+            emd_resultado, combinacion_resultado = self.evaluar_particiones(
+                particion1, particion2, estadosString, json_data, tensorOriginal, 
+                emd_resultado, combinacion_resultado, nodes, gradoLimite, intermediacionLimite
             )
-
-            # Evaluar movimientos de Partición 2 a Partición 1
-            emd_resultado, combinacion_resultado = self.evaluar_particion(
-                particion2, particion1, "Partición 2", "Partición 1",
-                estadosString, json_data, tensorOriginal, emd_resultado, combinacion_resultado, nodes, gradoLimite, intermediacionLimite
-            )
-
-            # Convertir cada partición a una cadena
-            particion1_str = ', '.join(combinacion_resultado[0])
-            particion2_str = ', '.join(combinacion_resultado[1])
 
             st.markdown("### Mejor combinación encontrada:")
-            st.write(f"Partición 1: {particion1_str}")
-            st.write(f"Partición 2: {particion2_str}")
-            st.write(f"EMD óptimo: {emd_resultado}")
+            st.write(f"Partición 1: {', '.join(combinacion_resultado[0])}")
+            st.write(f"Partición 2: {', '.join(combinacion_resultado[1])}")
+            st.write(f"EMD óptimo: {emd_resultado:.3f}")
 
-            # Marca el final del tiempo
             end_time = time() - start_time
-            st.write(f"Tiempo total de ejecución: {end_time} segundos")
-
-            st.markdown("### Valores utilizados:")
-            st.write(f"Grado límite: {gradoLimite}")
-            st.write(f"Intermediación límite: {intermediacionLimite}")
+            st.write(f"Tiempo total de ejecución: {end_time:.3f} segundos")
             
-    def evaluar_particion(self, particion_origen, particion_destino, nombre_origen, nombre_destino,
-                      estadosString, json_data, tensorOriginal, emd_resultado, combinacion_resultado,
-                      nodes, gradoLimite, intermediacionLimite):
-        st.markdown(f"#### Información de los nodos en {nombre_origen}:")
-        for etiqueta in particion_origen:
-            nodo = next((n for n in nodes if n.label == etiqueta), None)
-            if nodo:
-                st.write(f"Nodo: {etiqueta}, Grado: {nodo.grado}, Intermediación: {nodo.intermediacion}")
+            # Actualizar el estado de la sesión
+            self.actualizar_sesion(estadosString, presenteUsuario, futuroUsuarioString, emd_resultado, end_time)
 
-        st.markdown(f"#### Evaluando movimientos de {nombre_origen} a {nombre_destino}:")
-
-        for etiqueta in particion_origen[:]:
-            nodo = next((n for n in nodes if n.label == etiqueta), None)
+    def crear_nodos(self, presenteUsuario, futuroUsuario):
+        nodos = defaultdict(lambda: {'grado': 0, 'intermediacion': 0})
+        for letra in list(presenteUsuario) + futuroUsuario:
+            letra_sin_comilla = letra.strip("'")
+            nodo = self.buscar_nodo(letra_sin_comilla)
             if nodo:
-                st.write(f"Grado: {nodo.grado}, Intermediación: {nodo.intermediacion}")
+                nodos[letra]['grado'] = getattr(nodo, 'grado', 0)
+                nodos[letra]['intermediacion'] = getattr(nodo, 'intermediacion', 0)
+        return [Node(id=i+1, label=letra, **attrs) for i, (letra, attrs) in enumerate(nodos.items())]
+
+    def calcular_tensor_original(self, futuroUsuarioString, presenteUsuario, estadosString, json_data):
+        probabilidadOriginal = self.generar_probabilidad(futuroUsuarioString, presenteUsuario, estadosString, json_data)
+        if probabilidadOriginal:
+            return reduce(np.kron, [np.array(d["calculos"]) for d in probabilidadOriginal])
+        return None
+
+    def evaluar_particiones(self, particion1, particion2, estadosString, json_data, tensorOriginal, 
+                            emd_resultado, combinacion_resultado, nodes, gradoLimite, intermediacionLimite):
+        for origen, destino in [(particion1, particion2), (particion2, particion1)]:
+            emd_resultado, combinacion_resultado = self.evaluar_particion(
+                origen, destino, estadosString, json_data, tensorOriginal, 
+                emd_resultado, combinacion_resultado, nodes, gradoLimite, intermediacionLimite
+            )
+        return emd_resultado, combinacion_resultado
+
+    def actualizar_sesion(self, estadosString, presenteUsuario, futuroUsuarioString, emd_resultado, end_time):
+        st.session_state.estrategiaFinal = {
+            "estadoInicial": estadosString,
+            "valPresente": presenteUsuario,
+            "valFuturo": futuroUsuarioString,
+            "valPerdida": emd_resultado,
+            "tiempo": end_time
+        }
+            
+    def evaluar_particion(self, particion_origen, particion_destino, estadosString, 
+                                     json_data, tensorOriginal, emd_resultado, combinacion_resultado, 
+                                     nodes, gradoLimite, intermediacionLimite):
+        nodos_origen = {n.label: n for n in nodes if n.label in particion_origen}
+        
+        for etiqueta, nodo in nodos_origen.items():
+            if nodo.grado <= gradoLimite and nodo.intermediacion <= intermediacionLimite:
+                particion_origen_temp = [e for e in particion_origen if e != etiqueta]
                 
-                if nodo.grado <= gradoLimite and nodo.intermediacion <= intermediacionLimite:
-                    st.write("Cumple con los criterios de grado e intermediación.")
-                    
-                    # Verificación de que la partición origen no quede vacía
-                    particion_origen_temp = [e for e in particion_origen if e != etiqueta]
-                    if len(particion_origen_temp) == 0:
-                        st.write(f"No se puede mover el nodo '{etiqueta}' porque dejaría a {nombre_origen} vacío.")
-                        continue
-
-                    particion_destino_temp = particion_destino + [etiqueta]
-                    emd_nuevo = self.evaluarEMD(particion_origen_temp, particion_destino_temp, estadosString, json_data, tensorOriginal)
-
-                    st.write(f"Nueva {nombre_origen}: {', '.join(particion_origen_temp)}")
-                    st.write(f"Nueva {nombre_destino}: {', '.join(particion_destino_temp)}")
-                    st.write(f"Nuevo EMD: {emd_nuevo}")
-
-                    if emd_nuevo < emd_resultado:
-                        emd_resultado = emd_nuevo
-                        combinacion_resultado[0] = particion_origen_temp.copy()
-                        combinacion_resultado[1] = particion_destino_temp.copy()
-                        st.markdown("##### ¡Nuevo óptimo encontrado!")
-                    else:
-                        st.write("No mejora el EMD óptimo actual.")
-                else:
-                    st.write("No cumple con los criterios de grado e intermediación. No se mueve.")
+                if not particion_origen_temp:
+                    continue
+                
+                particion_destino_temp = particion_destino + [etiqueta]
+                emd_nuevo = self.evaluarEMD(particion_origen_temp, particion_destino_temp, estadosString, json_data, tensorOriginal)
+                
+                if emd_nuevo < emd_resultado:
+                    emd_resultado = emd_nuevo
+                    combinacion_resultado = [particion_origen_temp.copy(), particion_destino_temp.copy()]
         
         return emd_resultado, combinacion_resultado
             
                         
     def evaluarEMD(self, particion1, particion2, estadosString, json_data, tensorOriginal):
         tabla_marg = []
-        
-        for combinacion in [particion1, particion2]:
-            futuro = ''.join(letra for letra in combinacion if "'" in letra)
-            presente = ''.join(letra for letra in combinacion if "'" not in letra)
-            
-            probabilidad = self.generar_probabilidad(futuro, presente, estadosString, json_data)
+        for combinacion in (particion1, particion2):
+            probabilidad = self.procesar_combinacion(combinacion,estadosString,json_data)
             if probabilidad is not None:
                 tabla_marg.extend(probabilidad)
-        
+
+        if not tabla_marg:
+            return float('inf')
+
         tabla_marg_ordenada = sorted(tabla_marg, key=lambda x: x["letra"])
         
         producto_tensorial = self.construir_producto_tensorial(tabla_marg_ordenada)
@@ -266,88 +194,80 @@ class EjecutarApp:
         if producto_tensorial is None:
             return float('inf')
         
-        emd_distance = self.hamming_emd_tensorial(producto_tensorial, tensorOriginal)
-        
-        return emd_distance
+        return self.hamming_emd_tensorial(producto_tensorial, tensorOriginal)
     
-    
+    def procesar_combinacion(self, combinacion,estadosString,json_data):
+        futuro = ''.join(letra for letra in combinacion if "'" in letra)
+        presente = ''.join(letra for letra in combinacion if "'" not in letra)
+        return self.generar_probabilidad(futuro, presente, estadosString, json_data)
                         
                         
-    def particion_aleatoria(self,nodes):
+    def particion_aleatoria(self, nodes):
         n = len(nodes)
-        indices = list(range(n))
-        random.shuffle(indices)
+        indices = random.sample(range(n), n)
         division = random.randint(1, n - 1)
 
         particion1 = [nodes[i].label for i in indices[:division]]
         particion2 = [nodes[i].label for i in indices[division:]]
 
-        # Verificar que ninguna partición esté vacía
+        # Asegurar que cada partición tiene al menos un elemento
         if not particion1:
             particion1.append(particion2.pop())
-        if not particion2:
+        elif not particion2:
             particion2.append(particion1.pop())
 
-        # Verificar que cada partición tiene al menos un nodo futuro
-        if not any("'" in label for label in particion1):
-            for i in range(len(particion2)):
-                if "'" in particion2[i]:
-                    particion1.append(particion2.pop(i))
-                    break
+        # Asegurar que cada partición tiene al menos un nodo futuro
+        futuro1 = any("'" in label for label in particion1)
+        futuro2 = any("'" in label for label in particion2)
 
-        if not any("'" in label for label in particion2):
-            for i in range(len(particion1)):
-                if "'" in particion1[i]:
-                    particion2.append(particion1.pop(i))
-                    break
-
-        # Verificar que ninguna partición esté vacía después del ajuste
-        if not particion1 or not particion2:
-            particion1, particion2 = [], []
-            for i, index in enumerate(indices):
-                if i % 2 == 0:
-                    particion1.append(nodes[index].label)
+        if not futuro1 or not futuro2:
+            nodo_futuro = next((label for label in particion2 if "'" in label), None) if not futuro1 else next((label for label in particion1 if "'" in label), None)
+            if nodo_futuro:
+                if not futuro1:
+                    particion1.append(particion2.pop(particion2.index(nodo_futuro)))
                 else:
-                    particion2.append(nodes[index].label)
+                    particion2.append(particion1.pop(particion1.index(nodo_futuro)))
+
+        # Si aún hay problemas, crear una partición alternativa
+        if not particion1 or not particion2 or not futuro1 or not futuro2:
+            particion1 = [nodes[i].label for i in indices[::2]]
+            particion2 = [nodes[i].label for i in indices[1::2]]
 
         return particion1, particion2   
     
     def hamming_emd_tensorial(self, producto_tensorial, tensorOriginal):
         # Aplanar los tensores
-        flat1 = producto_tensorial.flatten()
-        flat2 = tensorOriginal.flatten()
+        flat1 = producto_tensorial.ravel()
+        flat2 = tensorOriginal.ravel()
         
         # Asegurarse de que los tensores tienen la misma longitud
-        if len(flat1) != len(flat2):
+        if flat1.shape != flat2.shape:
             raise ValueError("Los tensores deben tener la misma cantidad de elementos")
         
-        # Crear una matriz de distancias de Hamming
-        n = len(flat1)
-        dist_matrix = np.zeros((n, n))
-        for i in range(n):
-            for j in range(n):
-                dist_matrix[i, j] = hamming(flat1[i:i+1], flat2[j:j+1])
+        # Definir una función de distancia de Hamming para escalares
+        def hamming_scalar(x, y):
+            return 0 if x == y else 1
+        
+        # Calcular la matriz de distancias de Hamming
+        dist_matrix = np.zeros((len(flat1), len(flat2)))
+        for i in range(len(flat1)):
+            for j in range(len(flat2)):
+                dist_matrix[i, j] = hamming_scalar(flat1[i], flat2[j])
         
         # Resolver el problema de asignación
         row_ind, col_ind = linear_sum_assignment(dist_matrix)
         
         # Calcular la EMD
-        emd_distance = 0
-        for i, j in zip(row_ind, col_ind):
-            emd_distance += dist_matrix[i, j] * min(flat1[i], flat2[j])
+        emd_distance = np.sum(dist_matrix[row_ind, col_ind] * np.minimum(flat1[row_ind], flat2[col_ind]))
         
         return emd_distance
     
-    # Función para construir el producto tensorial
-    def construir_producto_tensorial(self,tabla_marg_ordenada):
-        producto_tensorial = None
-        for diccionario in tabla_marg_ordenada:
-            tensor = np.array(diccionario["calculos"])
-            if producto_tensorial is None:
-                producto_tensorial = tensor
-            else:
-                producto_tensorial = np.kron(producto_tensorial, tensor)
-        return producto_tensorial    
+    def construir_producto_tensorial(self, tabla_marg_ordenada):
+        if not tabla_marg_ordenada:
+            return None
+        
+        tensores = [np.array(d["calculos"]) for d in tabla_marg_ordenada]
+        return reduce(np.kron, tensores)  
 
     def sustentacionParcial(self):
         presenteUsuario = st.sidebar.text_input("Valores presentes")
@@ -532,12 +452,12 @@ class EjecutarApp:
             
             tabla_margOriginal = []
             probabilidadOriginal = self.generar_probabilidad(futuroUsuarioString, presenteUsuario,
-                                                             estadosString,json_data)
+                                                            estadosString, json_data)
             if probabilidadOriginal is not None:
                     for margOriginal in probabilidadOriginal:
                         tabla_margOriginal.append(margOriginal)
                         
-            #Calcular el producto tensorial de Kronecker para cada tensor en la lista
+            # Calcular el producto tensorial de Kronecker para cada tensor en la lista
             for i, diccionario in enumerate(tabla_margOriginal):
                 tensor = np.array(diccionario["calculos"])
                 if i == 0:
@@ -547,12 +467,11 @@ class EjecutarApp:
                     
             tensorOriginal = producto_tensorial.copy()
             
-            #st.write("Tensor original")
-            #st.write(probabilidadOriginal)
-            #st.write(tensorOriginal)
+            # Diccionario de caché para almacenar combinaciones ya evaluadas
+            cache = {}
             
             combinaciones = []
-            combinaTotales = self.generar_combinaciones_subgrafos(nodes,edges)
+            combinaTotales = self.generar_combinaciones_subgrafos(nodes, edges)
             
             tensores = []
             
@@ -560,66 +479,61 @@ class EjecutarApp:
                 futuro = ""
                 presente = ""
                 tabla_marg = []
+                
+                combinacion_str = str(combinacion)
+                if combinacion_str in cache:
+                    tensores.append(cache[combinacion_str])
+                    combinaciones.append(combinacion)
+                    continue
+                
                 for letra in combinacion[1]:
                     if "'" in letra:
                         futuro += letra
                     else:
                         presente += letra
                         
-                #Evaluar subgrafo1
-                probabilidad = self.generar_probabilidad(futuro, presente,estadosString,json_data)
+                # Evaluar subgrafo1
+                probabilidad = self.generar_probabilidad(futuro, presente, estadosString, json_data)
                 if probabilidad is None:
                     continue 
                 for marg in probabilidad:
                     tabla_marg.append(marg)
-                    #tabla_marg.insert(0,marg)
                     
                 futuro = ""
                 presente = ""
                 for letra in combinacion[0]: 
                     if "'" in letra:
-                        
                         futuro += letra
                     else:
                         presente += letra
                         
-                #Evaluar subgrafo2
-                probabilidad = self.generar_probabilidad(futuro, presente,estadosString,json_data)
+                # Evaluar subgrafo2
+                probabilidad = self.generar_probabilidad(futuro, presente, estadosString, json_data)
                 if probabilidad is None:
                     continue 
                 for marg in probabilidad:
                     tabla_marg.append(marg)
-                    #tabla_marg.insert(0,marg)
                     
                 tabla_marg_ordenada = sorted(tabla_marg, key=lambda x: x["letra"])
         
                 # Calcular el producto tensorial de Kronecker para cada tensor en la lista
                 for i, diccionario in enumerate(tabla_marg_ordenada):
-                    # Acceder a los cálculos almacenados en el diccionario
                     tensor = np.array(diccionario["calculos"])
                     if i == 0:
                         producto_tensorial = tensor
                     else:
                         producto_tensorial = np.kron(producto_tensorial, tensor)
-                #st.write(f"Tensor: {producto_tensorial}")
-                # Añadir una copia del producto tensorial a la lista de tensores
+                
+                cache[combinacion_str] = producto_tensorial.copy()
                 tensores.append(producto_tensorial.copy())
                 combinaciones.append(combinacion)
-                #st.write(combinacion)
-                #st.write(tabla_marg_ordenada)
-                #st.write(producto_tensorial)
+                
             # Calcular la distancia de Wasserstein (EMD) entre cada tensor y el tensor original
             lista_emd = []
-            #st.write(tensores)
             for i, tensor in enumerate(tensores):
-                # emd_distance = wasserstein_distance(np.arange(tensor.size), np.arange(tensorOriginal.size),
-                #                                     u_weights=tensor, v_weights=tensorOriginal)
                 emd_distance = self.hamming_emd_tensorial(tensor, tensorOriginal)
                 lista_emd.append(emd_distance)
-                #st.write(f"Combinación: {combinaciones[i]}")
-                #st.write(f"Tensor: {tensor}")
-                #st.write(f"Distancia de Wasserstein (EMD) entre tensor y tensorOriginal: {emd_distance}")
-
+                
             lista_emd = np.array(lista_emd)
 
             # Encuentra el índice de la menor pérdida
@@ -682,17 +596,18 @@ class EjecutarApp:
             st.text(df_tensores.to_string(index=False, header=False))
 
             st.markdown("<div class='subtitle'>Total de pérdida del sistema con el corte:</div>", unsafe_allow_html=True)
-            st.write(f"Pérdida total: {menor_perdida:.2f}")
+            st.write(f"Pérdida total: {menor_perdida:.3f}")
             
             end_time = time()  # Marca el final del tiempo
             total_time = end_time - start_time  # Calcula el tiempo total
-            st.write(f"Tiempo total de ejecución: {total_time:.2f} segundos")         
+            st.write(f"Tiempo total de ejecución: {total_time:.3f} segundos")         
             
             st.session_state.estrategia1["estadoInicial"] = estadosString
             st.session_state.estrategia1["valPresente"] = presenteUsuario
             st.session_state.estrategia1["valFuturo"] = futuroUsuarioString
             st.session_state.estrategia1["valPerdida"] = menor_perdida
             st.session_state.estrategia1["tiempo"] = total_time
+
     
             
             
@@ -844,11 +759,11 @@ class EjecutarApp:
                     
                     df_tensores  = pd.DataFrame(tensores_concatenados)
                     
-                    #st.text(df_tensores.to_string(index=False, header=False))
+                    # st.text(df_tensores.to_string(index=False, header=False))
                     
-                    #st.write("Origen: ",edge.source," Destino: ",edge.to, 
-                    #                      " Pérdida: ", edge.label)
-                    #st.write("--------------------------------------------------------")
+                    # st.write("Origen: ",edge.source," Destino: ",edge.to, 
+                    #                       " Pérdida: ", edge.label)
+                    # st.write("--------------------------------------------------------")
                     
                     if emd_distance == 0:
                         aristasEliminadas.append(copy.deepcopy(edge))
@@ -927,7 +842,7 @@ class EjecutarApp:
                 st.session_state.grafo["config"])
         
         st.write(f"La perdida total en el corte es de: {totalPerdida}")    
-        st.write(f"Tiempo total de ejecución: {total_time:.2f} segundos")
+        st.write(f"Tiempo total de ejecución: {total_time:.3f} segundos")
         
         st.session_state.estrategia2["valPerdida"] = totalPerdida
         st.session_state.estrategia2["tiempo"] = total_time
